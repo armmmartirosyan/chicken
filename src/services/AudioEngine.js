@@ -1,0 +1,307 @@
+import { settingsManager } from "./SettingsManager.js";
+
+// Import all audio files as Base64-inlined modules
+import jumpSound from "../assets/audios/jump.webm";
+import chickSound from "../assets/audios/chick.webm";
+import carSound from "../assets/audios/car.webm";
+import cashoutSound from "../assets/audios/cashout.webm";
+import winSound from "../assets/audios/win.webm";
+import soundtrack from "../assets/audios/Soundtrack.webm";
+import loseSound from "../assets/audios/lose.webm";
+import crashSound from "../assets/audios/crash.webm";
+import buttonClickSound from "../assets/audios/buttonClick.webm";
+
+/**
+ * AudioEngine - Singleton class for managing game audio with Base64-inlined assets
+ * Implements Web Audio API for optimal performance and memory efficiency
+ */
+class AudioEngine {
+  static instance = null;
+
+  constructor() {
+    if (AudioEngine.instance) {
+      return AudioEngine.instance;
+    }
+
+    // Audio context for Web Audio API
+    this.audioContext = null;
+    this.initialized = false;
+
+    // Audio buffers (decoded audio data)
+    this.buffers = new Map();
+
+    // Active audio sources (for stopping/cleanup)
+    this.activeSources = new Map();
+
+    // Music-specific state
+    this.musicSource = null;
+    this.musicStartTime = 0;
+    this.musicPausedAt = 0;
+
+    // Audio file mappings
+    this.audioFiles = {
+      jump: jumpSound,
+      chick: chickSound,
+      car: carSound,
+      cashout: cashoutSound,
+      win: winSound,
+      music: soundtrack,
+      lose: loseSound,
+      crash: crashSound,
+      buttonClick: buttonClickSound,
+    };
+
+    // Volume settings
+    this.sfxVolume = 0.7;
+    this.musicVolume = 0.4;
+
+    AudioEngine.instance = this;
+  }
+
+  /**
+   * Initialize audio context (must be called after user interaction)
+   */
+  async initialize() {
+    if (this.initialized) return;
+
+    try {
+      // Create audio context
+      this.audioContext = new (
+        window.AudioContext || window.webkitAudioContext
+      )();
+
+      // Load all audio files
+      await this.loadAllAudio();
+
+      this.initialized = true;
+
+      // Start music if enabled
+      if (settingsManager.get("musicEnabled")) {
+        this.playMusic();
+      }
+
+      // Subscribe to settings changes
+      settingsManager.subscribe("musicEnabled", (enabled) => {
+        if (enabled) {
+          this.playMusic();
+        } else {
+          this.stopMusic();
+        }
+      });
+    } catch (error) {
+      console.error("Failed to initialize AudioEngine:", error);
+    }
+  }
+
+  /**
+   * Load and decode all audio files
+   */
+  async loadAllAudio() {
+    const loadPromises = Object.entries(this.audioFiles).map(
+      async ([key, url]) => {
+        try {
+          const response = await fetch(url);
+          const arrayBuffer = await response.arrayBuffer();
+          const audioBuffer =
+            await this.audioContext.decodeAudioData(arrayBuffer);
+          this.buffers.set(key, audioBuffer);
+        } catch (error) {
+          console.warn(`Failed to load audio: ${key}`, error);
+        }
+      },
+    );
+
+    await Promise.all(loadPromises);
+  }
+
+  /**
+   * Play a sound effect
+   */
+  playSFX(soundKey, volume = 1.0, loop = false) {
+    if (!this.initialized || !settingsManager.get("soundEnabled")) {
+      return null;
+    }
+
+    const buffer = this.buffers.get(soundKey);
+    if (!buffer) {
+      console.warn(`Sound not found: ${soundKey}`);
+      return null;
+    }
+
+    try {
+      // Resume audio context if suspended
+      if (this.audioContext.state === "suspended") {
+        this.audioContext.resume();
+      }
+
+      // Create source node
+      const source = this.audioContext.createBufferSource();
+      source.buffer = buffer;
+      source.loop = loop;
+
+      // Create gain node for volume control
+      const gainNode = this.audioContext.createGain();
+      gainNode.gain.value = volume * this.sfxVolume;
+
+      // Connect nodes
+      source.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+
+      // Start playback
+      source.start(0);
+
+      // Store source for cleanup
+      const sourceId = `${soundKey}-${Date.now()}`;
+      this.activeSources.set(sourceId, source);
+
+      // Auto-cleanup when sound ends
+      source.onended = () => {
+        this.activeSources.delete(sourceId);
+      };
+
+      return source;
+    } catch (error) {
+      console.error(`Failed to play sound: ${soundKey}`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Play background music (looping)
+   */
+  playMusic() {
+    if (!this.initialized || !settingsManager.get("musicEnabled")) {
+      return;
+    }
+
+    // Stop current music if playing
+    if (this.musicSource) {
+      this.stopMusic();
+    }
+
+    const buffer = this.buffers.get("music");
+    if (!buffer) {
+      console.warn("Music buffer not loaded");
+      return;
+    }
+
+    try {
+      // Resume audio context if suspended
+      if (this.audioContext.state === "suspended") {
+        this.audioContext.resume();
+      }
+
+      // Create source node
+      this.musicSource = this.audioContext.createBufferSource();
+      this.musicSource.buffer = buffer;
+      this.musicSource.loop = true;
+
+      // Create gain node for volume control
+      const gainNode = this.audioContext.createGain();
+      gainNode.gain.value = this.musicVolume;
+
+      // Connect nodes
+      this.musicSource.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+
+      // Start playback from paused position or beginning
+      const offset = this.musicPausedAt || 0;
+      this.musicSource.start(0, offset);
+      this.musicStartTime = this.audioContext.currentTime - offset;
+
+      this.musicSource.onended = () => {
+        this.musicSource = null;
+      };
+    } catch (error) {
+      console.error("Failed to play music:", error);
+    }
+  }
+
+  /**
+   * Stop background music
+   */
+  stopMusic() {
+    if (this.musicSource) {
+      try {
+        // Save playback position for resume
+        const elapsed = this.audioContext.currentTime - this.musicStartTime;
+        const buffer = this.buffers.get("music");
+        if (buffer) {
+          this.musicPausedAt = elapsed % buffer.duration;
+        }
+
+        this.musicSource.stop();
+        this.musicSource = null;
+      } catch (error) {
+        console.error("Failed to stop music:", error);
+      }
+    }
+  }
+
+  /**
+   * Stop all active sounds
+   */
+  stopAllSounds() {
+    this.activeSources.forEach((source) => {
+      try {
+        source.stop();
+      } catch {
+        // Ignore errors from already stopped sources
+      }
+    });
+    this.activeSources.clear();
+  }
+
+  /**
+   * Game event handlers (called from game code)
+   */
+  onJump() {
+    this.playSFX("jump", 0.8);
+  }
+
+  onButtonClick() {
+    this.playSFX("buttonClick", 0.6);
+  }
+
+  onCar() {
+    // Random car sound with variation
+    if (Math.random() < 0.3) {
+      this.playSFX("car", 0.5);
+    }
+  }
+
+  onCashout() {
+    this.playSFX("cashout", 1.0);
+  }
+
+  onCrash() {
+    this.playSFX("crash", 0.9);
+  }
+
+  onLose() {
+    this.playSFX("lose", 1.0);
+  }
+
+  onWin() {
+    this.playSFX("win", 1.0);
+  }
+
+  /**
+   * Cleanup (call on unmount)
+   */
+  destroy() {
+    this.stopAllSounds();
+    this.stopMusic();
+
+    if (this.audioContext) {
+      this.audioContext.close();
+      this.audioContext = null;
+    }
+
+    this.initialized = false;
+    AudioEngine.instance = null;
+  }
+}
+
+// Export singleton instance
+export const audioEngine = new AudioEngine();

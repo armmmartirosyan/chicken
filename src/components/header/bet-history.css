@@ -1,0 +1,199 @@
+.bet-history-modal {
+  width: 576px;
+
+  .HistoryTable {
+    margin: 24px 0px;
+  }
+
+  .HistoryTableHeader {
+    padding: 8px;
+    gap: 4px;
+    display: grid;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 150%;
+    color: rgb(194, 194, 194);
+    letter-spacing: -0.3px;
+    grid-template-columns: 144px 87px 78px 1fr 16px;
+  }
+
+  .CustomScrollStyles {
+    position: relative;
+    background: transparent;
+    height: 100%;
+  }
+
+  .HistoryBody {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent !important;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgb(254, 182, 42);
+      border-radius: 10px;
+    }
+  }
+
+  .HistoryTableBodyRow {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgb(255, 255, 255);
+
+    align-items: center;
+    display: grid;
+    padding: 8px;
+    gap: 4px;
+    border-radius: 6px;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+
+    grid-template-columns: 144px 87px 78px 1fr 16px;
+  }
+
+  .HistoryTableBodyCellDate {
+    display: flex;
+    white-space: nowrap;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 24px;
+    width: fit-content;
+  }
+
+  .HistoryTableBodyCellBet {
+    font-weight: 600;
+    display: flex;
+    font-size: 14px;
+  }
+
+  .CellAmountContainer {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .CoefContainer {
+    width: 60px;
+    min-width: 60px;
+    height: 32px;
+    border-radius: 6px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    background: unset;
+    border: none;
+    color: rgb(128, 255, 148);
+    font-weight: 600;
+    display: flex;
+    border-radius: 8px;
+    background: rgb(63, 83, 128);
+    color: rgb(255, 255, 255);
+  }
+
+  .HistoryTableBodyRowWin {
+    display: flex;
+    font-size: 14px;
+  }
+
+  .DashStyles {
+    font-weight: 400;
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
+  }
+
+  .HistoryTableBodyCellIcon {
+    display: flex;
+  }
+
+  .IconWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    color: white;
+  }
+
+  .iconDiver path {
+    fill: rgb(27, 205, 73);
+  }
+
+  .Button {
+    width: 100%;
+    height: 50px;
+    background: rgb(61, 197, 91);
+    border-radius: 6px;
+    border: none;
+    filter: drop-shadow(rgba(0, 0, 0, 0.25) 0px 4px 4px);
+    font-weight: 700;
+    font-size: 17px;
+    font-family: Montserrat, sans-serif;
+    text-transform: uppercase;
+    color: rgb(255, 255, 255);
+    cursor: pointer;
+    letter-spacing: 1px;
+    outline: 0 !important;
+  }
+
+  .CustomScrollStylesParent {
+    height: 220px;
+    margin-right: -12px;
+  }
+
+  .HistoryEmptyState {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 220px;
+    color: rgb(194, 194, 194);
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+  }
+}
+
+@media (max-aspect-ratio: 110 / 100) {
+  .bet-history-modal {
+    width: 456px;
+
+    .HistoryTableBodyCellDate {
+      .date-today {
+        display: none;
+      }
+
+      .time-not-today {
+        display: none;
+      }
+    }
+
+    .HistoryTableBodyRow {
+      grid-template-columns: 64px 1fr 60px 1fr 16px;
+    }
+
+    .HistoryTableHeader {
+      grid-template-columns: 64px 1fr 60px 1fr 16px;
+    }
+  }
+}
+
+@media (max-width: 414px) {
+  .bet-history-modal {
+    padding: 10px 20px 10px 12px;
+  }
+}

@@ -1,0 +1,570 @@
+/* Full-width game area wrapper */
+.game-area-wrapper {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Top decoration area with grass and tree */
+.top-decoration {
+  background: linear-gradient(180deg, #8bc34a 0%, #689f38 100%);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  min-height: 60px;
+}
+
+.top-decoration .grass {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: repeating-linear-gradient(
+    90deg,
+    #7cb342,
+    #7cb342 3px,
+    #689f38 3px,
+    #689f38 6px
+  );
+}
+
+.top-decoration .tree {
+  font-size: 32px;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+  z-index: 1;
+}
+
+/* Stats panel styles */
+.stats-panel {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.stat-item.online {
+  color: #4ade80;
+}
+
+.stat-label {
+  white-space: nowrap;
+}
+
+.online-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+  flex-shrink: 0;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.username {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+/* Vertical road layout */
+.road-vertical {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #4a4a4a 0%, #5a5a5a 50%, #4a4a4a 100%);
+  border-radius: 12px;
+  padding: 12px 16px;
+  position: relative;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.5),
+    inset 0 2px 8px rgba(0, 0, 0, 0.3);
+  gap: 0;
+  min-height: 280px;
+}
+
+/* Horizontal lanes stacked vertically */
+.lane-horizontal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0;
+  position: relative;
+  flex: 1;
+}
+
+.lane-divider-horizontal {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 2px;
+  background: repeating-linear-gradient(
+    to right,
+    #ffffff,
+    #ffffff 16px,
+    transparent 16px,
+    transparent 28px
+  );
+  opacity: 0.6;
+}
+
+.lane-horizontal:first-child .lane-divider-horizontal {
+  display: none;
+}
+
+/* Multiplier circles */
+.multiplier-circle {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #606060 0%, #404040 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.6),
+    0 4px 12px rgba(0, 0, 0, 0.4);
+  position: relative;
+  border: 3px solid #555;
+  padding: 5px;
+  flex-shrink: 0;
+}
+
+.inner-circle {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #4a4a4a 0%, #3a3a3a 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #666;
+  position: relative;
+}
+
+.inner-circle::before {
+  content: "";
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  right: 10%;
+  height: 30%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 100%
+  );
+  border-radius: 50%;
+}
+
+.multiplier-circle span {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+  position: relative;
+  z-index: 1;
+}
+
+/* Bottom section with chicken */
+.bottom-section {
+  background: linear-gradient(180deg, #8bc34a 0%, #689f38 100%);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  min-height: 70px;
+}
+
+.bottom-grass {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: repeating-linear-gradient(
+    90deg,
+    #7cb342,
+    #7cb342 3px,
+    #689f38 3px,
+    #689f38 6px
+  );
+}
+
+.chicken-position {
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.chicken-position.dead {
+  opacity: 0.5;
+  filter: grayscale(100%);
+  transform: rotate(-90deg) scale(0.8);
+}
+
+.chicken-position.celebrating {
+  animation: celebrate 0.5s ease-in-out 3;
+}
+
+@keyframes celebrate {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.1) rotate(-10deg);
+  }
+  75% {
+    transform: scale(1.1) rotate(10deg);
+  }
+}
+
+/* Game messages */
+.game-message {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  font-weight: 700;
+  padding: 8px 20px;
+  border-radius: 8px;
+  animation: messageSlide 0.3s ease-out;
+  white-space: nowrap;
+  z-index: 100;
+}
+
+.game-message.lost {
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+}
+
+.game-message.won {
+  background: rgba(34, 197, 94, 0.9);
+  color: white;
+}
+
+@keyframes messageSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Lane states */
+.lane-horizontal.clickable {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.lane-horizontal.clickable:hover {
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.lane-horizontal.current {
+  background: rgba(74, 222, 128, 0.05);
+}
+
+.lane-horizontal.passed {
+  background: rgba(74, 222, 128, 0.03);
+}
+
+/* Multiplier states */
+.multiplier-circle.active {
+  border-color: #4ade80;
+  box-shadow: 
+    inset 0 2px 6px rgba(0, 0, 0, 0.6),
+    0 4px 12px rgba(74, 222, 128, 0.4),
+    0 0 20px rgba(74, 222, 128, 0.3);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.multiplier-circle.completed {
+  border-color: #22c55e;
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+}
+
+.multiplier-circle.completed .inner-circle {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Chicken on lane during gameplay */
+.chicken-on-lane {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  transition: bottom 0.5s ease-out;
+  pointer-events: none;
+}
+
+/* Car crash animation */
+.car-container-moving.crash {
+  animation: carCrash 0.5s ease-out forwards;
+}
+
+@keyframes carCrash {
+  0% {
+    transform: translateX(-50%) rotate(90deg) scale(0.7);
+  }
+  50% {
+    transform: translateX(-50%) rotate(110deg) scale(0.9);
+  }
+  100% {
+    transform: translateX(-50%) rotate(90deg) scale(0.7);
+    opacity: 1;
+  }
+}
+
+/* Car moving across lanes */
+.car-container-moving {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  transform: translateX(-50%) rotate(90deg) scale(0.7);
+  filter: drop-shadow(2px 2px 6px rgba(0, 0, 0, 0.5));
+  animation: carMove 4s ease-in-out infinite;
+  z-index: 10;
+  opacity: 0.9;
+}
+
+@keyframes carMove {
+  0%,
+  100% {
+    left: 15%;
+  }
+  50% {
+    left: 85%;
+  }
+}
+
+/* Tablet screens (768px and up) */
+@media (min-width: 768px) {
+  .stats-sidebar {
+    display: block;
+    width: 180px;
+    padding: 16px;
+  }
+
+  .game-field {
+    padding: 20px;
+    gap: 12px;
+  }
+
+  .road-vertical {
+    padding: 16px 24px;
+    min-height: 350px;
+  }
+
+  .lane-horizontal {
+    padding: 10px 0;
+  }
+
+  .multiplier-circle {
+    width: 90px;
+    height: 90px;
+    padding: 6px;
+  }
+
+  .multiplier-circle span {
+    font-size: 20px;
+  }
+
+  .chicken-position {
+    transform: scale(0.75);
+  }
+
+  @keyframes chickenBounce {
+    0%,
+    100% {
+      transform: scale(0.75) translateY(0);
+    }
+    50% {
+      transform: scale(0.75) translateY(-10px);
+    }
+  }
+
+  .car-container-moving {
+    transform: translateX(-50%) rotate(90deg) scale(0.8);
+  }
+
+  .top-decoration .tree {
+    font-size: 36px;
+  }
+
+  .bottom-section {
+    min-height: 80px;
+  }
+
+  .top-decoration {
+    min-height: 70px;
+  }
+
+  .stat-item {
+    font-size: 12px;
+  }
+
+  .username {
+    font-size: 12px;
+  }
+}
+
+/* Desktop screens (1024px and up) */
+@media (min-width: 1024px) {
+  .stats-sidebar {
+    width: 220px;
+    padding: 20px;
+  }
+
+  .game-field {
+    padding: 24px;
+    gap: 16px;
+  }
+
+  .road-vertical {
+    padding: 20px 32px;
+    min-height: 420px;
+  }
+
+  .lane-horizontal {
+    padding: 12px 0;
+  }
+
+  .multiplier-circle {
+    width: 110px;
+    height: 110px;
+    padding: 8px;
+    border: 4px solid #555;
+  }
+
+  .multiplier-circle span {
+    font-size: 26px;
+  }
+
+  .chicken-position {
+    transform: scale(0.9);
+  }
+
+  @keyframes chickenBounce {
+    0%,
+    100% {
+      transform: scale(0.9) translateY(0);
+    }
+    50% {
+      transform: scale(0.9) translateY(-10px);
+    }
+  }
+
+  .car-container-moving {
+    transform: translateX(-50%) rotate(90deg) scale(0.9);
+  }
+
+  .bottom-section,
+  .top-decoration {
+    min-height: 100px;
+    padding: 20px;
+  }
+
+  .top-decoration .tree {
+    font-size: 40px;
+  }
+
+  .stat-item {
+    font-size: 13px;
+  }
+
+  .username {
+    font-size: 13px;
+  }
+}
+
+/* Large desktop (1440px and up) */
+@media (min-width: 1440px) {
+  .road-vertical {
+    min-height: 480px;
+  }
+
+  .chicken-position {
+    transform: scale(1);
+  }
+
+  @keyframes chickenBounce {
+    0%,
+    100% {
+      transform: scale(1) translateY(0);
+    }
+    50% {
+      transform: scale(1) translateY(-12px);
+    }
+  }
+
+  .car-container-moving {
+    transform: translateX(-50%) rotate(90deg) scale(1);
+  }
+}

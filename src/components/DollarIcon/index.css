@@ -1,0 +1,31 @@
+.dollar-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  color: rgb(116 116 116);
+  border-radius: 50%;
+  font-family: "Montserrat", serif;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.dollar-icon.default {
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+}
+
+.dollar-icon.small {
+  width: 14px;
+  height: 14px;
+  font-size: 9px;
+}
+
+.dollar-icon.large {
+  width: 2.4rem;
+  height: 2.4rem;
+  font-size: 1.4rem;
+}

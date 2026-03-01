@@ -1,0 +1,209 @@
+.header {
+  background-color: rgb(66, 66, 66);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: rgb(255, 255, 255);
+  touch-action: none;
+  user-select: none;
+  height: 49px;
+  position: relative;
+  padding: 8px 22px;
+}
+
+.logo-container {
+  margin-right: 8px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  height: 27px;
+  transition: 0.2s;
+}
+
+.logo {
+  max-width: 100%;
+  width: auto;
+  height: 100%;
+  object-fit: scale-down;
+  pointer-events: none;
+  user-select: none;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.how-to-play {
+  height: 33px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-left: 8px;
+
+  & * {
+    transition: all 0.4s;
+  }
+
+  & span {
+    margin-left: 8px;
+    font-family: Montserrat, sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    transition: color 0.2s;
+  }
+
+  &:hover {
+    & span {
+      color: rgb(253, 207, 75);
+      filter: brightness(150%);
+    }
+
+    & svg path,
+    & svg circle {
+      stroke: rgb(253, 207, 75);
+      filter: brightness(150%);
+    }
+  }
+}
+
+.balance {
+  display: flex;
+  justify-content: center;
+  min-width: 150px;
+  align-items: center;
+  padding: 4px 16px;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  height: 33px;
+  font-size: 16px;
+}
+
+.fullscreen-button {
+  height: 33px;
+  width: 32px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  cursor: pointer;
+
+  & svg path {
+    transition: all 0.4s;
+  }
+
+  &:hover svg path {
+    stroke: rgb(253, 207, 75);
+  }
+}
+
+.generic-dialog {
+  padding: 32px;
+  background: rgb(84, 84, 84);
+  border: 2px solid rgb(84, 84, 84);
+  border-radius: 12px;
+  transition: 0.3s;
+  height: max-content;
+  box-shadow: none;
+  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  color: #f0f0f0;
+  width: 576px;
+  max-width: 90%;
+  outline: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  scrollbar-width: none;
+  /* For Internet Explorer and Edge */
+  -ms-overflow-style: none;
+}
+
+.generic-dialog::-webkit-scrollbar {
+  display: none;
+  width: 0; /* Optional: also hide horizontal scrollbar width if needed */
+  height: 0; /* Optional: also hide vertical scrollbar height if needed */
+}
+
+.generic-dialog::backdrop {
+  background: rgba(26, 26, 26, 0.8);
+  backdrop-filter: blur(5px);
+}
+
+.generic-dialog-x {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.generic-dialog-x path {
+  stroke: #f0f0f0;
+  fill: #f0f0f0;
+  transition: all 0.1s;
+}
+
+.generic-dialog-x:hover path {
+  stroke: rgb(253, 207, 75);
+  fill: rgb(253, 207, 75);
+}
+
+.generic-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.generic-dialog-header-text {
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 150%;
+}
+
+.HowToPlayList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.HowToPlayListItem {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 150%;
+  letter-spacing: -0.3px;
+  color: rgb(255, 255, 255);
+  white-space: pre-wrap;
+  font-family: Montserrat, sans-serif;
+}
+
+.HowToPlaySublist {
+  margin-left: 10px;
+}
+
+.HowToPlaySublistItem {
+  margin-bottom: 15px;
+}
+
+@media (max-aspect-ratio: 110 / 100) {
+  .how-to-play {
+    display: none;
+  }
+}

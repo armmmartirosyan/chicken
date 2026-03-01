@@ -1,0 +1,226 @@
+.animated-chicken {
+  position: relative;
+  width: 120px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chicken-sprite-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chicken-shadow {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 10px;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: shadowPulse 2s ease-in-out infinite;
+}
+
+@keyframes shadowPulse {
+  0%,
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.1);
+    opacity: 0.4;
+  }
+}
+
+.chicken-body {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  animation: idleFloat 2s ease-in-out infinite;
+}
+
+/* Idle floating animation */
+@keyframes idleFloat {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Chicken parts positioning */
+.chicken-part {
+  position: absolute;
+  transition: transform 0.3s ease;
+}
+
+.chicken-part.body {
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.chicken-part.head {
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  animation: headBob 2s ease-in-out infinite;
+}
+
+@keyframes headBob {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateX(-50%) translateY(-3px) rotate(-2deg);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-5px) rotate(0deg);
+  }
+  75% {
+    transform: translateX(-50%) translateY(-3px) rotate(2deg);
+  }
+}
+
+.chicken-part.wing {
+  bottom: 35px;
+  right: 15px;
+  z-index: 3;
+  animation: wingFlap 2s ease-in-out infinite;
+}
+
+@keyframes wingFlap {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+}
+
+.chicken-part.tail {
+  bottom: 40px;
+  left: 5px;
+  z-index: 1;
+  animation: tailWag 2s ease-in-out infinite;
+}
+
+@keyframes tailWag {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-5deg);
+  }
+}
+
+.chicken-part.feet {
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+/* Eye blink animation */
+.chicken-eye {
+  animation: eyeBlink 4s ease-in-out infinite;
+}
+
+@keyframes eyeBlink {
+  0%,
+  48%,
+  52%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.1);
+  }
+}
+
+.eye-shine {
+  animation: eyeShine 4s ease-in-out infinite;
+}
+
+@keyframes eyeShine {
+  0%,
+  48%,
+  52%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Frame-specific adjustments for more dynamic idle animation */
+.chicken-part.body.frame-1 {
+  transform: translateX(-50%) scale(1.02);
+}
+
+.chicken-part.body.frame-2 {
+  transform: translateX(-50%) scale(0.98);
+}
+
+.chicken-part.head.frame-1 {
+  animation-delay: -0.1s;
+}
+
+.chicken-part.head.frame-2 {
+  animation-delay: -0.2s;
+}
+
+.chicken-part.wing.frame-1 {
+  animation-delay: -0.15s;
+}
+
+.chicken-part.wing.frame-2 {
+  animation-delay: -0.3s;
+}
+
+/* Breathing effect */
+.animated-chicken.idle .chicken-body {
+  animation:
+    idleFloat 2s ease-in-out infinite,
+    breathe 3s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.02, 0.98);
+  }
+}
+
+/* Responsive scaling */
+@media (max-width: 768px) {
+  .animated-chicken {
+    transform: scale(0.8);
+  }
+}
+
+@media (min-width: 1024px) {
+  .animated-chicken {
+    width: 140px;
+    height: 160px;
+  }
+}

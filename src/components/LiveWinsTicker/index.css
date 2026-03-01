@@ -1,0 +1,131 @@
+@keyframes pulse-glow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.8;
+  }
+}
+
+@keyframes slideDown {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.win-item-animate {
+  animation: slideDown 0.4s;
+}
+
+.live-wins-ticker {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  width: 208px;
+}
+
+.TitleLine {
+  display: flex;
+  height: 28px;
+  padding: 7px 12px;
+  gap: 16px;
+  color: rgba(255, 255, 255, 0.7);
+  background: linear-gradient(
+    90deg,
+    rgb(66, 66, 66) 0%,
+    rgba(66, 66, 66, 0) 100%
+  );
+}
+
+.OnlineBlock {
+  display: flex;
+  flex: 1 1 0%;
+  gap: 8px;
+  align-items: center;
+}
+.SignalWrapper {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  z-index: 2;
+}
+.SignalPulse {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAANCAYAAACdKY9CAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAADwSURBVHgBjZHNSsNAEMdnZrPZuEqJ1A+ad/BdqtCj4smnEhHprZfSx/EBEgVtSj+23WQ32+TQEHpo93+agd9vGGYQOhm5EdN/Wgayd9X0VRFsp9efiy6Dh+LRPd8FG5YAOtYFwGFRVlU67X39t8KTexswpRM4ESFtOsZxhvUaISj5AB7RKv8mtrtMwDMUyD5ZW8S+AudRTICc+QrNQQhcab0Fh5Ysg9yXL0tYkFlHc1+Bx5uUZrcfK61Ydg6u/5RNcFK0nx4uX/pCuEFlSHRB4tZs8+hndv/+2/R4PGmYv8YUmoumNipci5uVqie3h9kDvpZZGJoymBsAAAAASUVORK5CYII=);
+  mask-repeat: no-repeat;
+  mask-position: center center;
+  background-color: rgb(83, 243, 94);
+  animation: 1.5s ease-in-out 0s infinite normal none running pulse-glow;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+}
+.SignalBase {
+  mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAHCAYAAAArkDztAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAB4SURBVHgBZY5BEYQwEARnNxGQc3ASkHCn4O7DG5CAEiQADkABSEACDoiAZENS8KCgX1P9mGpC5L+VRmkp0vaOx+HVrZRvZSZapugMDiyT+7LX0l5kwkhQDROQ4QF9GAjzXQdgYSZfp9+LtcpxRWfVO1b9zqo+VtkdJ8Ql3qtyFx8AAAAASUVORK5CYII=);
+  mask-repeat: no-repeat;
+  mask-position: center center;
+  background-color: rgb(83, 243, 94);
+  width: 14px;
+  height: 14px;
+  position: absolute;
+}
+
+.UserLine {
+  position: relative;
+  display: flex;
+  flex: 1 1 0%;
+  padding: 8px 12px;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(
+    90deg,
+    rgb(85, 84, 84) 0%,
+    rgba(85, 84, 84, 0) 100%
+  );
+}
+.ElementRoot {
+  height: 20px;
+  width: 20px;
+  position: relative;
+}
+.UserAvatar {
+  width: 17px;
+  height: 17px;
+}
+.FlagImage {
+  position: absolute;
+  border-radius: 2px;
+  width: 12px;
+  bottom: 0px;
+  right: 0px;
+}
+.UserName {
+  font-family: "Montserrat", sans-serif;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  white-space: nowrap;
+}
+.UserAmount {
+  color: rgb(83, 243, 94);
+  white-space: nowrap;
+}
