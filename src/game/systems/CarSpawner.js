@@ -232,31 +232,6 @@ export class CarSpawner {
   }
 
   /**
-   * Update difficulty settings (called when difficulty changes)
-   */
-  updateDifficulty(difficulty, difficultySettings) {
-    if (!difficultySettings || !difficultySettings.carSpawn) {
-      console.warn("Invalid difficulty settings for car spawner");
-      return;
-    }
-
-    this.currentDifficulty = difficulty;
-    const carSpawn = difficultySettings.carSpawn;
-
-    // Update speed multiplier
-    this.speedMultiplier = carSpawn.speedMultiplier;
-    this.minSpeed = this.baseMinSpeed * this.speedMultiplier;
-    this.maxSpeed = this.baseMaxSpeed * this.speedMultiplier;
-
-    // Update spawn intervals (convert from ms to seconds)
-    this.minSpawnInterval = carSpawn.minSpawnDelay / 1000;
-    this.maxSpawnInterval = carSpawn.maxSpawnDelay / 1000;
-
-    // Reset spawn timer to apply new settings immediately
-    this.nextSpawnTime = this.getRandomSpawnInterval();
-  }
-
-  /**
    * Enable collision detection (called when game starts)
    */
   enableCollisions() {

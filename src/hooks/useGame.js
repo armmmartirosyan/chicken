@@ -6,7 +6,6 @@ import { InputSystem } from "../game/systems/InputSystem.js";
 import { Chicken } from "../game/entities/Chicken.js";
 import { Road } from "../game/entities/Road.js";
 import { Scenery } from "../game/entities/Scenery.js";
-import { DIFFICULTY_SETTINGS } from "../config/gameConfig.js";
 import { gameEvents } from "../game/core/GameEventBus.js";
 
 // Import all game assets as ESM modules (will be inlined as Base64)
@@ -401,17 +400,6 @@ export function useGame(canvasRef, config, scrollContainerRef) {
               containerElement,
               game.gateManager, // Pass gate manager
             );
-
-            // Set initial difficulty settings for car spawner
-            // Default to "Easy" if config doesn't specify difficulty
-            const initialDifficulty = config.difficulty || "Easy";
-            const difficultySettings =
-              DIFFICULTY_SETTINGS[initialDifficulty] ||
-              DIFFICULTY_SETTINGS.Easy;
-            game.carSpawner.updateDifficulty(
-              initialDifficulty,
-              difficultySettings,
-            );
           } catch (error) {
             console.error("CarSpawner initialization failed:", error);
           }
@@ -714,7 +702,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
         }
         // Schedule tooltip update after jump completes
         setTimeout(() => {
-          const multiplier = game.coinManager.getCurrentMultiplier();
+          const multiplier = game.coinManager.getCurrentDisplayMultiplier();
           chicken.updateTooltipText(multiplier);
         }, 400); // Match jump duration
       }
@@ -738,101 +726,6 @@ export function useGame(canvasRef, config, scrollContainerRef) {
       game.finishCurrentLane();
     }
   }, []);
-
-  // Update game difficulty dynamically
-  const updateDifficulty = useCallback(
-    (newDifficulty, newConfig) => {
-      const game = gameRef.current;
-      const road = roadRef.current;
-      const chicken = chickenRef.current;
-
-      if (!game || !road || !chicken) {
-        console.warn("Cannot update difficulty: game not fully initialized");
-        return;
-      }
-
-      // Get start width from ref
-      const startWidth = startWidthRef.current;
-
-      // Call game updateDifficulty with all required params
-      game.updateDifficulty(newDifficulty, newConfig, startWidth);
-
-      // Recalculate lane positions for chicken jumping
-      const lanePositions = [];
-      const chickenStartX = lanePositionsRef.current[0]; // Original start position
-
-      // Starting position (same as before)
-      lanePositions.push(chickenStartX);
-
-      // Road lane positions (center of each lane)
-      for (let i = 0; i < newConfig.laneCount; i++) {
-        const laneCenter =
-          startWidth + i * newConfig.laneWidth + newConfig.laneWidth / 2;
-        lanePositions.push(laneCenter);
-      }
-
-      // Finish position (on finish sidewalk)
-      const newRoadWidth = newConfig.laneWidth * newConfig.laneCount;
-      const finishX = startWidth + newRoadWidth + 160;
-      lanePositions.push(finishX);
-
-      // Update refs
-      lanePositionsRef.current = lanePositions;
-      totalLanesRef.current = lanePositions.length;
-      roadWidthRef.current = newRoadWidth;
-
-      // Reset chicken to starting position
-      chicken.x = chickenStartX;
-      chicken.container.position.x = chickenStartX;
-      currentLaneRef.current = 0;
-
-      // Reset world position
-      const stage = game.renderer?.app?.stage;
-      if (stage) {
-        stage.x = 0;
-      }
-
-      // Update decorative sprite positions based on new road width
-      const finishWidth = finishWidthRef.current;
-
-      // Update banner position if it exists
-      if (bannerSpriteRef.current) {
-        bannerSpriteRef.current.x =
-          startWidth + newRoadWidth + finishWidth * 0.45;
-      }
-
-      // Update finish light sprite position if it exists
-      if (finishLightSpriteRef.current) {
-        finishLightSpriteRef.current.x =
-          startWidth + newRoadWidth + finishWidth * 0.1;
-      }
-
-      // Start light sprite position is based on startWidth only, so no update needed
-
-      // Resize canvas to match new layout
-      const roadHeight = roadHeightRef.current;
-      const newTotalWidth = startWidth + newRoadWidth + finishWidth / 2;
-      const newTotalHeight = roadHeight; // Height doesn't change
-
-      canvasWidthRef.current = newTotalWidth; // Update canvas width ref
-
-      game.resize(newTotalWidth, newTotalHeight);
-
-      // CRITICAL: Update world dimensions for atomic camera's finish-line clamping
-      // This ensures maxScroll calculation uses the new canvas width
-      game.renderer.setWorldDimensions(newTotalWidth);
-
-      // Force container to recalculate scroll bounds by triggering reflow
-      if (scrollContainerRef?.current) {
-        const container = scrollContainerRef.current;
-        // Reset scroll position to ensure proper bounds
-        container.scrollLeft = 0;
-        // Force reflow to recalculate scrollable area
-        void container.offsetWidth;
-      }
-    },
-    [scrollContainerRef],
-  );
 
   // Reset game to initial state
   const resetGame = useCallback(() => {
@@ -1054,7 +947,6 @@ export function useGame(canvasRef, config, scrollContainerRef) {
     jumpChicken,
     getCurrentMultiplier,
     finishCurrentLane,
-    updateDifficulty,
     resetGame,
     registerCollisionCallback,
   };

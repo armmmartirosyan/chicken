@@ -2,7 +2,6 @@ import { PixiRenderer } from "./PixiRenderer.js";
 import { CarSpawner } from "../systems/CarSpawner.js";
 import { CoinManager } from "../managers/CoinManager.js";
 import { GateManager } from "../managers/GateManager.js";
-import { DIFFICULTY_SETTINGS } from "../../config/gameConfig.js";
 import { Container, Sprite, Text } from "pixi.js";
 
 /**
@@ -218,7 +217,7 @@ export class Game {
 
       // Calculate scale using sine wave: Scale = 1.0 + sin(time * speed) * intensity
       const scale =
-        1.0 +
+        0.7 +
         Math.sin(this.pulseAnimationTime * this.pulseSpeed) *
           this.pulseIntensity;
       this.winDisplay.scale.set(scale);
@@ -345,7 +344,7 @@ export class Game {
 
     // Create text for win amount with coin styling (PixiJS v8 format) - will be scaled adaptively
     this.winAmountText = new Text({
-      text: "$0.00",
+      text: "€0.00",
       style: {
         fontFamily: "Montserrat, sans-serif",
         fontSize: 27, // Base size - will be scaled (reduced 1.5x)
@@ -403,25 +402,6 @@ export class Game {
       }
     }
 
-    // Calculate adaptive scale based on viewport size
-    // Make popup smaller for all screens, extra small for mobile
-    const scaleX = Math.min(1, viewportWidth / 600);
-    const scaleY = Math.min(1, viewportHeight / 400); // Reference height
-
-    // Base scale: 0.333 (reduced 1.5x for all screens)
-    // Extra reduction for small screens (< 600px width)
-    let sizeMultiplier = 0.333; // 33% of original size (reduced 1.5x from 0.5)
-    if (viewportWidth < 600) {
-      sizeMultiplier = 0.167; // ~17% for small screens (reduced 1.5x from 0.25)
-    } else if (viewportWidth < 900) {
-      sizeMultiplier = 0.2; // 20% for medium screens (reduced 1.5x from 0.3)
-    }
-
-    const adaptiveScale = Math.min(scaleX, scaleY) * sizeMultiplier;
-
-    // Apply adaptive scale to the entire display
-    this.winDisplay.scale.set(adaptiveScale);
-
     // Get current stage offset (world scrolling)
     const stageX = this.renderer.app.stage.x || 0;
 
@@ -467,13 +447,13 @@ export class Game {
     const roundedAmount = Math.round(amount * 100) / 100;
 
     // Update text with win amount
-    this.winAmountText.text = `$${roundedAmount.toFixed(2)}`;
+    this.winAmountText.text = `${roundedAmount.toFixed(2)}€`;
 
     // Re-position in case screen was resized
     this.positionWinDisplay();
 
     // Reset scale and start pulse animation
-    this.winDisplay.scale.set(1.0);
+    // this.winDisplay.scale.set(1.0);
     this.pulseAnimationActive = true;
     this.pulseAnimationTime = 0;
 
@@ -507,51 +487,6 @@ export class Game {
   setEntityReferences(road, finishScenery) {
     this.road = road;
     this.finishScenery = finishScenery;
-  }
-
-  /**
-   * Update game difficulty and recreate coins
-   */
-  updateDifficulty(newDifficulty, newConfig, startWidth) {
-    if (!this.initialized) {
-      console.warn("Cannot update difficulty: game not initialized");
-      return;
-    }
-
-    try {
-      // 1. Update road lane count
-      if (this.road) {
-        this.road.updateLaneCount(newConfig.laneCount);
-      }
-
-      // 2. Update finish scenery position
-      if (this.finishScenery && startWidth !== undefined) {
-        const newRoadWidth = newConfig.laneWidth * newConfig.laneCount;
-        this.finishScenery.x = startWidth + newRoadWidth;
-      }
-
-      // 3. Update car spawner lanes and difficulty settings
-      if (this.carSpawner && this.road) {
-        this.carSpawner.updateLaneCount(this.road);
-
-        // Get difficulty settings and update car spawner
-        const difficultySettings =
-          DIFFICULTY_SETTINGS[newDifficulty] || DIFFICULTY_SETTINGS.Easy;
-        this.carSpawner.updateDifficulty(newDifficulty, difficultySettings);
-      }
-
-      // 4. Clear and reset gate manager
-      if (this.gateManager) {
-        this.gateManager.destroy();
-      }
-
-      // 5. Update coin manager
-      if (this.coinManager) {
-        this.coinManager.updateDifficulty(newDifficulty);
-      }
-    } catch (error) {
-      console.error("Error updating difficulty:", error);
-    }
   }
 
   /**

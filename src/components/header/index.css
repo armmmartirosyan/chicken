@@ -36,45 +36,6 @@
   gap: 16px;
 }
 
-.how-to-play {
-  height: 33px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 16px;
-  cursor: pointer;
-  white-space: nowrap;
-  margin-left: 8px;
-
-  & * {
-    transition: all 0.4s;
-  }
-
-  & span {
-    margin-left: 8px;
-    font-family: Montserrat, sans-serif;
-    font-style: normal;
-    font-weight: 600;
-    font-size: 14px;
-    transition: color 0.2s;
-  }
-
-  &:hover {
-    & span {
-      color: rgb(253, 207, 75);
-      filter: brightness(150%);
-    }
-
-    & svg path,
-    & svg circle {
-      stroke: rgb(253, 207, 75);
-      filter: brightness(150%);
-    }
-  }
-}
-
 .balance {
   display: flex;
   justify-content: center;
@@ -86,26 +47,6 @@
   border-radius: 6px;
   height: 33px;
   font-size: 16px;
-}
-
-.fullscreen-button {
-  height: 33px;
-  width: 32px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  cursor: pointer;
-
-  & svg path {
-    transition: all 0.4s;
-  }
-
-  &:hover svg path {
-    stroke: rgb(253, 207, 75);
-  }
 }
 
 .generic-dialog {
@@ -200,10 +141,4 @@
 
 .HowToPlaySublistItem {
   margin-bottom: 15px;
-}
-
-@media (max-aspect-ratio: 110 / 100) {
-  .how-to-play {
-    display: none;
-  }
 }

@@ -10,7 +10,8 @@ export class Coin extends BaseEntity {
     super(x, y);
 
     this.laneIndex = config.laneIndex || 0;
-    this.value = config.value || 1.01;
+    this.multiplier = config.multiplier || 1.01; // For display on coin
+    this.value = config.value || 1.01; // For actual win amount
     this.isCollected = false;
     this.isGold = false;
     this.laneWidth = config.laneWidth || 252; // Store lane width for dynamic scaling
@@ -54,21 +55,14 @@ export class Coin extends BaseEntity {
 
     this.container.addChild(this.sprite);
 
-    // Create text label for the value with smart formatting
+    // Create text label showing multiplier with smart formatting
     let displayText;
-    if (this.value >= 1000) {
-      // For large numbers, use compact notation (e.g., "1.2K", "3.6M")
-      if (this.value >= 1000000) {
-        displayText = (this.value / 1000000).toFixed(1) + "M x";
-      } else {
-        displayText = (this.value / 1000).toFixed(1) + "K x";
-      }
-    } else if (this.value >= 100) {
-      displayText = this.value.toFixed(0) + "x";
-    } else if (this.value >= 10) {
-      displayText = this.value.toFixed(1) + "x";
+    if (this.multiplier >= 100) {
+      displayText = this.multiplier.toFixed(0) + "x";
+    } else if (this.multiplier >= 10) {
+      displayText = this.multiplier.toFixed(1) + "x";
     } else {
-      displayText = this.value.toFixed(2) + "x";
+      displayText = this.multiplier.toFixed(2) + "x";
     }
 
     this.text = new Text({

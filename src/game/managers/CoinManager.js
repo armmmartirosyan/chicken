@@ -1,5 +1,8 @@
 import { Coin } from "../entities/Coin.js";
-import { DIFFICULTY_SETTINGS } from "../../config/gameConfig.js";
+import {
+  FIXED_WIN_VALUES,
+  FIXED_MULTIPLIERS,
+} from "../../config/gameConfig.js";
 import { gameEvents } from "../core/GameEventBus.js";
 
 /**
@@ -22,11 +25,10 @@ export class CoinManager {
     this.silverTexture = null;
     this.goldTexture = null;
 
-    // Get coin multipliers based on difficulty
-    const difficulty = config.difficulty || "Easy";
-    this.coinMultipliers =
-      DIFFICULTY_SETTINGS[difficulty]?.coinMultipliers ||
-      DIFFICULTY_SETTINGS.Easy.coinMultipliers;
+    // Use hard-coded win values for payouts (6 lanes)
+    this.coinWinValues = FIXED_WIN_VALUES;
+    // Use hard-coded multipliers for coin display
+    this.coinMultipliers = FIXED_MULTIPLIERS;
   }
 
   /**
@@ -61,20 +63,22 @@ export class CoinManager {
     // Position coins 50px above chicken's Y level (where chicken will jump)
     const coinY = this.chicken.y - 50;
 
-    // Only create as many coins as we have multipliers
-    const coinsToCreate = Math.min(laneCount, this.coinMultipliers.length);
+    // Only create as many coins as we have win values
+    const coinsToCreate = Math.min(laneCount, this.coinWinValues.length);
 
     for (let i = 0; i < coinsToCreate; i++) {
       // Calculate coin position (center of lane)
       const coinX = this.road.x + (i + 0.5) * laneWidth;
 
-      // Get coin value from difficulty multipliers array
-      const coinValue = this.coinMultipliers[i];
+      // Get multiplier for display and win value for payout
+      const multiplier = this.coinMultipliers[i];
+      const winValue = this.coinWinValues[i];
 
       // Create coin
       const coin = new Coin(coinX, coinY, {
         laneIndex: i,
-        value: coinValue,
+        multiplier: multiplier, // For display on coin
+        value: winValue, // For actual win amount
         laneWidth: laneWidth, // Pass lane width for dynamic scaling
       });
 
@@ -210,76 +214,8 @@ export class CoinManager {
   }
 
   /**
-   * Update difficulty and recreate coins
-   */
-  updateDifficulty(newDifficulty) {
-    // Validate that we have all required dependencies
-    if (!this.entityManager || !this.road || !this.chicken) {
-      console.warn("Cannot update difficulty: missing dependencies");
-      return;
-    }
-
-    // Save current state
-    const savedCurrentLane = this.currentLaneIndex;
-    const savedHighestPassedLane = this.highestPassedLane;
-
-    // Update multipliers based on new difficulty
-    const newMultipliers = DIFFICULTY_SETTINGS[newDifficulty]?.coinMultipliers;
-    if (!newMultipliers) {
-      console.warn(`Invalid difficulty: ${newDifficulty}, using Easy`);
-      this.coinMultipliers = DIFFICULTY_SETTINGS.Easy.coinMultipliers;
-    } else {
-      this.coinMultipliers = newMultipliers;
-    }
-
-    // Clean up existing coins safely
-    try {
-      this.cleanup();
-    } catch (error) {
-      console.error("Error cleaning up coins:", error);
-    }
-
-    // Recreate coins with new multipliers
-    try {
-      this.createCoins();
-    } catch (error) {
-      console.error("Error creating coins:", error);
-      return;
-    }
-
-    // Restore state and update coin visibility/colors
-    this.currentLaneIndex = savedCurrentLane;
-    this.highestPassedLane = savedHighestPassedLane;
-
-    // Update coins based on saved state
-    if (savedHighestPassedLane >= 0) {
-      // Turn all passed coins to gold
-      for (
-        let i = 0;
-        i <= savedHighestPassedLane && i < this.coins.length;
-        i++
-      ) {
-        const coin = this.coins[i];
-        if (coin && !coin.isGold) {
-          try {
-            coin.turnGold();
-          } catch (error) {
-            console.error(`Error turning coin ${i} gold:`, error);
-          }
-        }
-      }
-    }
-
-    // Update visibility
-    try {
-      this.updateCoinVisibility();
-    } catch (error) {
-      console.error("Error updating coin visibility:", error);
-    }
-  }
-
-  /**
-   * Get the current coin multiplier (based on current lane position)
+   * Get the current win value (based on current lane position)
+   * Returns the euro amount for cashout button and win notification
    */
   getCurrentMultiplier() {
     // Use currentLaneIndex if chicken is on a valid lane, otherwise use highestPassedLane
@@ -291,7 +227,24 @@ export class CoinManager {
     if (laneIndex >= 0 && laneIndex < this.coins.length) {
       return this.coins[laneIndex].value;
     }
-    return 1.0; // Default multiplier if no coins passed
+    return 0; // Default to 0 if no coins passed
+  }
+
+  /**
+   * Get the current display multiplier (based on current lane position)
+   * Returns the multiplier value for tooltip display (e.g., 2.21, 9.09)
+   */
+  getCurrentDisplayMultiplier() {
+    // Use currentLaneIndex if chicken is on a valid lane, otherwise use highestPassedLane
+    const laneIndex =
+      this.currentLaneIndex >= 0
+        ? this.currentLaneIndex
+        : this.highestPassedLane;
+
+    if (laneIndex >= 0 && laneIndex < this.coins.length) {
+      return this.coins[laneIndex].multiplier;
+    }
+    return 0.0; // Default to 0.0x if no coins passed
   }
 
   /**

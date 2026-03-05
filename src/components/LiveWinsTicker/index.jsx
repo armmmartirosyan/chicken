@@ -22,7 +22,7 @@ const WinItem = memo(function WinItem({ win }) {
         />
       </div>
       <span className="UserName">{win.name}</span>
-      <span className="UserAmount">+${win.amount.toFixed(2)}</span>
+      <span className="UserAmount">+{win.amount.toFixed(2)}€</span>
     </div>
   );
 });

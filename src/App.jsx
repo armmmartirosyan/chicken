@@ -10,8 +10,6 @@ import {
 import { gameEvents } from "./game/core/GameEventBus.js";
 import { liveWinService } from "./services/LiveWinService.js";
 import { audioEngine } from "./services/AudioEngine.js";
-import { settingsManager } from "./services/SettingsManager.js";
-import { betHistoryManager } from "./services/BetHistoryManager.js";
 
 /**
  * Helper function to round currency to 2 decimal places
@@ -24,14 +22,12 @@ const roundCurrency = (amount) => {
 export default function App() {
   // Financial state
   const [balance, setBalance] = useState(20);
-  const [betAmount, setBetAmount] = useState(1);
-  const [difficulty, setDifficulty] = useState("Easy");
 
   // Game state: idle, playing, atFinish, won, lost
   const [gameState, setGameState] = useState("idle");
 
-  // UI state
-  const [currentMultiplier, setCurrentMultiplier] = useState(1.0);
+  // UI state - current win value based on lane
+  const [currentWinValue, setCurrentWinValue] = useState(0);
 
   // Game function references
   const [jumpChickenFn, setJumpChickenFn] = useState(null);
@@ -47,9 +43,8 @@ export default function App() {
   const [loadingError, setLoadingError] = useState(null);
 
   // Refs for instant access
-  const multiplierRef = useRef(1.0);
+  const winValueRef = useRef(0);
   const currentLaneRef = useRef(0);
-  const currentBetIdRef = useRef(null);
 
   // Handle loading state from GameArea
   const handleLoadingChange = useCallback(({ isLoading, loadingError }) => {
@@ -85,12 +80,7 @@ export default function App() {
     audioEngine.onButtonClick();
 
     if (gameState === "idle" || gameState === "won") {
-      // Start new game
-      if (balance < betAmount) {
-        alert("Insufficient balance!");
-        return;
-      }
-
+      // Start new game - no bet deduction
       if (gameState === "won" && resetGameFn) {
         resetGameFn();
       }
@@ -100,14 +90,9 @@ export default function App() {
         game.hideWinNotification();
       }
 
-      setBalance((prev) => roundCurrency(prev - betAmount));
       setGameState("playing");
-      setCurrentMultiplier(1.0);
-      multiplierRef.current = 1.0;
-
-      // Record bet start
-      const betId = betHistoryManager.startBet(betAmount);
-      currentBetIdRef.current = betId;
+      setCurrentWinValue(0);
+      winValueRef.current = 0;
 
       if (game) {
         game.setGameState("playing"); // Enable collisions when game starts
@@ -127,7 +112,7 @@ export default function App() {
         audioEngine.onJump(); // Play jump sound
       }
     }
-  }, [gameState, betAmount, balance, jumpChickenFn, resetGameFn]);
+  }, [gameState, jumpChickenFn, resetGameFn]);
 
   // Handle collision with car
   const handleCollision = useCallback(() => {
@@ -136,20 +121,14 @@ export default function App() {
     // Play lose sound when chicken gets hit
     audioEngine.onLose();
 
-    // Record bet loss (multiplier 0, winAmount 0)
-    if (currentBetIdRef.current) {
-      betHistoryManager.completeBet(currentBetIdRef.current, 0, 0);
-      currentBetIdRef.current = null;
-    }
-
     setGameState("lost");
   }, [gameState]);
 
   // Handle reset complete - restore game state after death sequence
   const handleResetComplete = useCallback(() => {
     setGameState("idle");
-    setCurrentMultiplier(1.0);
-    multiplierRef.current = 1.0;
+    setCurrentWinValue(0);
+    winValueRef.current = 0;
   }, []);
 
   // Handle win complete - restore game state after win animation
@@ -159,8 +138,8 @@ export default function App() {
     }
 
     setGameState("idle");
-    setCurrentMultiplier(1.0);
-    multiplierRef.current = 1.0;
+    setCurrentWinValue(0);
+    winValueRef.current = 0;
   }, [resetGameFn]);
 
   // Register collision callback when game is ready
@@ -200,7 +179,7 @@ export default function App() {
         setGameState("atFinish");
         gameEvents.emit("game:finished", {
           laneIndex,
-          multiplier: multiplierRef.current,
+          winValue: winValueRef.current,
         });
       }
     };
@@ -209,7 +188,7 @@ export default function App() {
     return () => unsubscribe();
   }, [gameState]);
 
-  // Update current multiplier in real-time while playing
+  // Update current win value in real-time while playing
   useEffect(() => {
     if (gameState !== "playing" && gameState !== "atFinish") {
       return;
@@ -223,20 +202,20 @@ export default function App() {
     let lastUpdateTime = 0;
     const updateInterval = 100; // Update every 100ms
 
-    const updateMultiplier = (timestamp) => {
+    const updateWinValue = (timestamp) => {
       if (timestamp - lastUpdateTime >= updateInterval) {
-        const multiplier = getCurrentMultiplierFn();
+        const winValue = getCurrentMultiplierFn(); // This returns the win value now
 
         // Update both state (for UI) and ref (for instant access)
-        setCurrentMultiplier(multiplier);
-        multiplierRef.current = multiplier;
+        setCurrentWinValue(winValue);
+        winValueRef.current = winValue;
 
         lastUpdateTime = timestamp;
       }
-      animationFrameId = requestAnimationFrame(updateMultiplier);
+      animationFrameId = requestAnimationFrame(updateWinValue);
     };
 
-    animationFrameId = requestAnimationFrame(updateMultiplier);
+    animationFrameId = requestAnimationFrame(updateWinValue);
 
     return () => {
       if (animationFrameId) {
@@ -258,18 +237,7 @@ export default function App() {
     }
 
     // Calculate winnings using ref for instant value
-    const multiplier = multiplierRef.current;
-    const winnings = roundCurrency(betAmount * multiplier);
-
-    // Record bet win
-    if (currentBetIdRef.current) {
-      betHistoryManager.completeBet(
-        currentBetIdRef.current,
-        multiplier,
-        winnings,
-      );
-      currentBetIdRef.current = null;
-    }
+    const winnings = roundCurrency(winValueRef.current);
 
     // Update balance
     setBalance((prev) => roundCurrency(prev + winnings));
@@ -287,40 +255,12 @@ export default function App() {
     setTimeout(() => {
       handleWinComplete();
     }, 3100); // Slightly longer than notification duration
-  }, [gameState, finishCurrentLaneFn, betAmount, handleWinComplete]);
+  }, [gameState, finishCurrentLaneFn, handleWinComplete]);
 
   // Space key listener for "Space to Play" feature
   useEffect(() => {
-    const handleKeyDown = (event) => {
-      // Only respond to Space key
-      if (event.code !== "Space") return;
-
-      // Check if setting is enabled
-      if (!settingsManager.get("spaceToPlayEnabled")) return;
-
-      // Prevent default space behavior (page scroll)
-      event.preventDefault();
-
-      // Don't trigger if typing in an input field
-      if (
-        event.target.tagName === "INPUT" ||
-        event.target.tagName === "TEXTAREA"
-      ) {
-        return;
-      }
-
-      // Determine which button is active and trigger it
-      if (gameState === "atFinish") {
-        // Cashout button is active
-        handleCashout();
-      } else if (
-        gameState === "idle" ||
-        gameState === "playing" ||
-        gameState === "won"
-      ) {
-        // Play/Go button is active
-        handlePlay();
-      }
+    const handleKeyDown = () => {
+      return;
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -328,7 +268,7 @@ export default function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [gameState, handlePlay, handleCashout]);
+  }, []);
 
   return (
     <div className="app-container">
@@ -343,19 +283,15 @@ export default function App() {
       <GameArea
         onJumpReady={handleJumpReady}
         scrollContainerRef={scrollContainerRef}
-        difficulty={difficulty}
+        difficulty="Hardcore"
         onLoadingChange={handleLoadingChange}
       />
       <ControlPanel
-        betAmount={betAmount}
-        setBetAmount={setBetAmount}
-        difficulty={difficulty}
-        setDifficulty={setDifficulty}
         onPlay={handlePlay}
         onCashout={handleCashout}
         gameState={gameState}
         disabled={gameState === "playing" || gameState === "atFinish"}
-        currentMultiplier={currentMultiplier}
+        currentWinValue={currentWinValue}
         goButtonDisabled={
           gameState === "won" ||
           gameState === "lost" ||
@@ -364,8 +300,10 @@ export default function App() {
         cashoutButtonDisabled={gameState !== "atFinish"}
       />
 
-      {/* Hand indicator - points to GO during playing, CASHOUT at finish */}
-      {(gameState === "playing" || gameState === "atFinish") && (
+      {/* Hand indicator - points to GO on idle/playing, CASHOUT at finish */}
+      {(gameState === "idle" ||
+        gameState === "playing" ||
+        gameState === "atFinish") && (
         <HandIndicator
           targetButton={gameState === "atFinish" ? "CASHOUT" : "GO"}
           visible={true}

@@ -16,7 +16,6 @@ export function CanvasGameArea({
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const gameRef = useRef(null);
-  const previousDifficultyRef = useRef(difficulty);
 
   // Pass containerRef to parent for scroll control
   useEffect(() => {
@@ -64,7 +63,6 @@ export function CanvasGameArea({
     jumpChicken,
     getCurrentMultiplier,
     finishCurrentLane,
-    updateDifficulty,
     resetGame,
     registerCollisionCallback,
   } = useGame(canvasRef, config, containerRef);
@@ -79,19 +77,6 @@ export function CanvasGameArea({
   // CRITICAL: Connect real-time resize handler for instant viewport updates
   // This enables live scaling without page refresh
   useResponsiveCanvas(canvasRef, containerRef, gameRef);
-
-  // Handle difficulty changes
-  useEffect(() => {
-    if (previousDifficultyRef.current !== difficulty) {
-      // Update difficulty in the game if it's not the initial load
-      if (previousDifficultyRef.current && updateDifficulty) {
-        const newConfig = getDefaultConfig(difficulty);
-        updateDifficulty(difficulty, newConfig);
-      }
-
-      previousDifficultyRef.current = difficulty;
-    }
-  }, [difficulty, updateDifficulty]);
 
   // Notify parent when jump function is ready
   useEffect(() => {

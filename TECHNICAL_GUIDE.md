@@ -1241,8 +1241,6 @@ if (coinCollected) {
 
 ### 8.5 How to Modify Difficulty Settings
 
-**Location**: `src/config/gameConfig.js` → `DIFFICULTY_SETTINGS`
-
 **Example** (make Hard mode even harder):
 
 ```javascript
