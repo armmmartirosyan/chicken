@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useCallback, useRef, useEffect } from "react";
 import "./App.css";
 import {
@@ -6,6 +7,7 @@ import {
   ControlPanel,
   LoadingScreen,
   HandIndicator,
+  WelcomeModal,
 } from "./components";
 import { gameEvents } from "./game/core/GameEventBus.js";
 import { liveWinService } from "./services/LiveWinService.js";
@@ -41,6 +43,12 @@ export default function App() {
   // Loading state
   const [isGameLoading, setIsGameLoading] = useState(true);
   const [loadingError, setLoadingError] = useState(null);
+
+  // Welcome modal state
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [hasClaimedBonus, setHasClaimedBonus] = useState(false);
+  const [tutorialFingerVisible, setTutorialFingerVisible] = useState(false);
+  const [tutorialTarget, setTutorialTarget] = useState(null);
 
   // Refs for instant access
   const winValueRef = useRef(0);
@@ -159,6 +167,32 @@ export default function App() {
       liveWinService.stop();
       audioEngine.destroy(); // Cleanup audio engine
     };
+  }, []);
+
+  // Show welcome modal after loading completes
+  useEffect(() => {
+    if (!isGameLoading && !hasClaimedBonus) {
+      setShowWelcomeModal(true);
+      // Delay finger appearance to prevent flicker
+      setTimeout(() => {
+        setTutorialTarget("CLAIM");
+        setTutorialFingerVisible(true);
+      }, 300);
+    }
+  }, [isGameLoading, hasClaimedBonus]);
+
+  // Handle welcome bonus claim
+  const handleClaimBonus = useCallback(() => {
+    setHasClaimedBonus(true);
+    // Fade out finger, then move to GO button
+    setTutorialFingerVisible(false);
+    setTimeout(() => {
+      setShowWelcomeModal(false);
+      setTutorialTarget(null); // Clear tutorial target to let game state control it
+      setTutorialFingerVisible(true);
+    }, 300);
+    // Add bonus to balance
+    setBalance((prev) => roundCurrency(prev + 1500));
   }, []);
 
   // Listen for lane changes to detect finish line
@@ -293,6 +327,7 @@ export default function App() {
         disabled={gameState === "playing" || gameState === "atFinish"}
         currentWinValue={currentWinValue}
         goButtonDisabled={
+          showWelcomeModal ||
           gameState === "won" ||
           gameState === "lost" ||
           gameState === "atFinish"
@@ -300,15 +335,22 @@ export default function App() {
         cashoutButtonDisabled={gameState !== "atFinish"}
       />
 
-      {/* Hand indicator - points to GO on idle/playing, CASHOUT at finish */}
-      {(gameState === "idle" ||
-        gameState === "playing" ||
-        gameState === "atFinish") && (
-        <HandIndicator
-          targetButton={gameState === "atFinish" ? "CASHOUT" : "GO"}
-          visible={true}
-        />
-      )}
+      {/* Welcome Modal - shown after loading */}
+      <WelcomeModal visible={showWelcomeModal} onClaim={handleClaimBonus} />
+
+      {/* Hand indicator - context-aware positioning with smooth transitions */}
+      <HandIndicator
+        targetButton={
+          tutorialTarget || (gameState === "atFinish" ? "CASHOUT" : "GO")
+        }
+        visible={
+          tutorialFingerVisible ||
+          (hasClaimedBonus &&
+            (gameState === "idle" ||
+              gameState === "playing" ||
+              gameState === "atFinish"))
+        }
+      />
     </div>
   );
 }

@@ -1,43 +1,36 @@
 .hand-indicator {
   position: fixed;
-  z-index: 9999;
+  z-index: 10001;
   pointer-events: none;
-  animation: handBounce 0.6s ease-in-out infinite;
+  will-change: transform, opacity;
+  opacity: 0;
   transition:
-    left 0.3s ease,
-    top 0.3s ease; /* Smooth transition between targets */
+    opacity 0.3s ease,
+    left 0.4s ease,
+    top 0.4s ease;
 }
 
-/* Flip hand horizontally when pointing left (for CASHOUT button) */
-.hand-indicator.pointing-left {
-  animation: handBounceLeft 0.6s ease-in-out infinite;
+.hand-indicator.visible {
+  opacity: 1;
 }
 
-.hand-indicator.pointing-left .hand-emoji {
-  transform: scaleX(-1); /* Flip horizontally */
+.hand-indicator.hidden {
+  opacity: 0;
 }
 
-.hand-emoji {
-  font-size: 48px;
-  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+.hand-image {
+  width: 100px;
+  height: auto;
+  filter: drop-shadow(3px 3px 8px rgba(0, 0, 0, 0.4));
+  animation: point 1.2s ease-in-out infinite;
 }
 
-@keyframes handBounce {
+@keyframes point {
   0%,
   100% {
-    transform: translateX(0) scale(1);
+    transform: translateX(0) translateY(0);
   }
   50% {
-    transform: translateX(10px) scale(1.1);
-  }
-}
-
-@keyframes handBounceLeft {
-  0%,
-  100% {
-    transform: translateX(0) scale(1);
-  }
-  50% {
-    transform: translateX(-10px) scale(1.1); /* Bounce to the left */
+    transform: translateX(-8px) translateY(-3px);
   }
 }
