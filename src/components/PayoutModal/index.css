@@ -1,0 +1,130 @@
+/* Payout Modal Overlay - Full-screen grey background */
+.payout-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+  pointer-events: auto;
+}
+
+/* Modal Container - Centers the dialog */
+.payout-modal-container {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Dialog Box - Uses Base64 background */
+.payout-modal-dialog {
+  pointer-events: auto;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Modal Content */
+.payout-modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
+.payout-modal-box {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #34343452;
+  border: 1px solid white;
+  outline: 4px solid #0021fb;
+  box-shadow: 0 0 20px white;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+/* Title */
+.payout-modal-title {
+  font-size: 40px;
+  color: #32a6f7;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+
+  font-family: "Bangers", system-ui;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.payout-modal-text {
+  font-size: 35px;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  font-family: "Bangers", system-ui;
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Lane Indicator */
+.payout-modal-lane {
+  font-size: 80px;
+  color: #32a6f7;
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9);
+  font-family: "Bangers", system-ui;
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Next Button */
+.payout-modal-button {
+  width: 230px;
+  height: 60px;
+  background: #56d8ff;
+  background: linear-gradient(
+    180deg,
+    rgba(86, 216, 255, 1) 0%,
+    rgba(9, 110, 235, 1) 100%
+  );
+  border: 2px solid black;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 40px;
+  color: #ffffff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  transition:
+    transform 0.1s ease,
+    filter 0.1s ease;
+  position: relative;
+  transform-origin: center;
+  animation: bounce 1.5s ease-in-out infinite;
+
+  font-family: "Bangers", system-ui;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.payout-modal-button:hover {
+  filter: brightness(1.1);
+}
+
+.payout-modal-button:active {
+  animation: none;
+  transform: scale(0.95);
+  filter: brightness(0.9);
+}
+
+/* Bounce animation for next button */
+@keyframes bounce {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}

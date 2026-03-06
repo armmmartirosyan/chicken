@@ -35,6 +35,7 @@ class AudioEngine {
 
     // Music-specific state
     this.musicSource = null;
+    this.musicGainNode = null; // Store gain node for volume control (ducking)
     this.musicStartTime = 0;
     this.musicPausedAt = 0;
 
@@ -197,12 +198,12 @@ class AudioEngine {
       this.musicSource.loop = true;
 
       // Create gain node for volume control
-      const gainNode = this.audioContext.createGain();
-      gainNode.gain.value = this.musicVolume;
+      this.musicGainNode = this.audioContext.createGain();
+      this.musicGainNode.gain.value = this.musicVolume;
 
       // Connect nodes
-      this.musicSource.connect(gainNode);
-      gainNode.connect(this.audioContext.destination);
+      this.musicSource.connect(this.musicGainNode);
+      this.musicGainNode.connect(this.audioContext.destination);
 
       // Start playback from paused position or beginning
       const offset = this.musicPausedAt || 0;
@@ -211,6 +212,7 @@ class AudioEngine {
 
       this.musicSource.onended = () => {
         this.musicSource = null;
+        this.musicGainNode = null;
       };
     } catch (error) {
       console.error("Failed to play music:", error);
@@ -232,6 +234,7 @@ class AudioEngine {
 
         this.musicSource.stop();
         this.musicSource = null;
+        this.musicGainNode = null;
       } catch (error) {
         console.error("Failed to stop music:", error);
       }
@@ -284,6 +287,30 @@ class AudioEngine {
 
   onWin() {
     this.playSFX("win", 1.0);
+  }
+
+  /**
+   * Duck music volume for modals (reduce to 20%)
+   */
+  duckMusic() {
+    if (this.musicGainNode && this.initialized) {
+      this.musicGainNode.gain.setValueAtTime(
+        this.musicVolume * 0.2,
+        this.audioContext.currentTime,
+      );
+    }
+  }
+
+  /**
+   * Restore music volume after modal (restore to 100%)
+   */
+  restoreMusic() {
+    if (this.musicGainNode && this.initialized) {
+      this.musicGainNode.gain.setValueAtTime(
+        this.musicVolume,
+        this.audioContext.currentTime,
+      );
+    }
   }
 
   /**

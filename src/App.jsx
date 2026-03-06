@@ -8,6 +8,7 @@ import {
   LoadingScreen,
   HandIndicator,
   WelcomeModal,
+  PayoutModal,
 } from "./components";
 import { gameEvents } from "./game/core/GameEventBus.js";
 import { liveWinService } from "./services/LiveWinService.js";
@@ -49,6 +50,13 @@ export default function App() {
   const [hasClaimedBonus, setHasClaimedBonus] = useState(false);
   const [tutorialFingerVisible, setTutorialFingerVisible] = useState(false);
   const [tutorialTarget, setTutorialTarget] = useState(null);
+
+  // Payout modal state (persistent across all games)
+  const [showPayoutModal, setShowPayoutModal] = useState(false);
+  const [currentPayoutLane, setCurrentPayoutLane] = useState(null);
+
+  // Predictive Safety-Lock state
+  const [isNextLaneSafe, setIsNextLaneSafe] = useState(true);
 
   // Refs for instant access
   const winValueRef = useRef(0);
@@ -173,6 +181,8 @@ export default function App() {
   useEffect(() => {
     if (!isGameLoading && !hasClaimedBonus) {
       setShowWelcomeModal(true);
+      // Duck music when modal appears
+      audioEngine.duckMusic();
       // Delay finger appearance to prevent flicker
       setTimeout(() => {
         setTutorialTarget("CLAIM");
@@ -184,15 +194,47 @@ export default function App() {
   // Handle welcome bonus claim
   const handleClaimBonus = useCallback(() => {
     setHasClaimedBonus(true);
+
+    // MASTER DIRECTIVE: Set chicken_game_played in sessionStorage
+    // This enables persistent modals for all future games
+    try {
+      sessionStorage.setItem("chicken_game_played", "true");
+    } catch (e) {
+      console.warn("Failed to set chicken_game_played:", e);
+    }
+
     // Fade out finger, then move to GO button
     setTutorialFingerVisible(false);
     setTimeout(() => {
       setShowWelcomeModal(false);
+      // Restore music volume after modal closes
+      audioEngine.restoreMusic();
       setTutorialTarget(null); // Clear tutorial target to let game state control it
       setTutorialFingerVisible(true);
     }, 300);
-    // Add bonus to balance
-    setBalance((prev) => roundCurrency(prev + 1500));
+  }, []);
+
+  // Handle payout modal next button
+  const handlePayoutNext = useCallback(() => {
+    // Hide modal and finger
+    setShowPayoutModal(false);
+    setTutorialFingerVisible(false);
+    // Restore music volume after modal closes
+    audioEngine.restoreMusic();
+
+    setTimeout(() => {
+      // Clear tutorial target and resume game
+      setTutorialTarget(null);
+      setTutorialFingerVisible(true);
+
+      // Resume game after 500ms invincibility buffer
+      setTimeout(() => {
+        const game = window.__GAME_INSTANCE__;
+        if (game) {
+          game.setGameState("playing");
+        }
+      }, 500);
+    }, 300);
   }, []);
 
   // Listen for lane changes to detect finish line
@@ -204,6 +246,31 @@ export default function App() {
       const totalLanes = game?.coinManager?.coins?.length || 0;
 
       currentLaneRef.current = laneIndex;
+
+      // MASTER DIRECTIVE: Show payout modals at lanes 2 and 4 on EVERY game
+      // Condition: chicken_game_played must be true (set when bonus claimed)
+      const hasStartedPlaying =
+        sessionStorage.getItem("chicken_game_played") === "true";
+
+      if (hasStartedPlaying && (laneIndex === 2 || laneIndex === 4)) {
+        // Wait for coin flip animation to complete before showing modal
+        // Coin flip takes 400ms, we wait 500ms to ensure it's fully visible
+        setTimeout(() => {
+          // Immediately pause game to prevent further input during animation
+          const game = window.__GAME_INSTANCE__;
+          if (game) {
+            game.setGameState("paused");
+          }
+          setCurrentPayoutLane(laneIndex);
+          setShowPayoutModal(true);
+          // Duck music when modal appears
+          audioEngine.duckMusic();
+          setTutorialTarget("NEXT");
+          setTutorialFingerVisible(true);
+        }, 200); // Wait for gate/coin animation to complete
+
+        return;
+      }
 
       // Check if reached finish line (beyond all coins)
       if (laneIndex >= totalLanes) {
@@ -291,6 +358,35 @@ export default function App() {
     }, 3100); // Slightly longer than notification duration
   }, [gameState, finishCurrentLaneFn, handleWinComplete]);
 
+  // MASTER DIRECTIVE: Frame-by-frame Predictive Safety-Lock
+  // Check if next lane is safe every frame during gameplay
+  useEffect(() => {
+    if (gameState !== "playing" && gameState !== "idle") {
+      setIsNextLaneSafe(true); // Default to safe when not playing
+      return;
+    }
+
+    let animationFrameId;
+
+    const checkSafety = () => {
+      const game = window.__GAME_INSTANCE__;
+      if (game && game.isNextLaneSafe) {
+        const currentLane = currentLaneRef.current;
+        const safe = game.isNextLaneSafe(currentLane);
+        setIsNextLaneSafe(safe);
+      }
+      animationFrameId = requestAnimationFrame(checkSafety);
+    };
+
+    animationFrameId = requestAnimationFrame(checkSafety);
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [gameState]);
+
   // Space key listener for "Space to Play" feature
   useEffect(() => {
     const handleKeyDown = () => {
@@ -327,7 +423,9 @@ export default function App() {
         disabled={gameState === "playing" || gameState === "atFinish"}
         currentWinValue={currentWinValue}
         goButtonDisabled={
+          !isNextLaneSafe || // MASTER DIRECTIVE: Safety-Lock prevents jumping when unsafe
           showWelcomeModal ||
+          showPayoutModal ||
           gameState === "won" ||
           gameState === "lost" ||
           gameState === "atFinish"
@@ -338,14 +436,26 @@ export default function App() {
       {/* Welcome Modal - shown after loading */}
       <WelcomeModal visible={showWelcomeModal} onClaim={handleClaimBonus} />
 
+      {/* Payout Modal - shown at lanes 2 and 4 during first run */}
+      <PayoutModal
+        visible={showPayoutModal}
+        lane={currentPayoutLane}
+        onNext={handlePayoutNext}
+      />
+
       {/* Hand indicator - context-aware positioning with smooth transitions */}
       <HandIndicator
         targetButton={
           tutorialTarget || (gameState === "atFinish" ? "CASHOUT" : "GO")
         }
         visible={
-          tutorialFingerVisible ||
+          // Show finger for tutorial target (CLAIM or NEXT buttons)
+          (tutorialFingerVisible && tutorialTarget) ||
+          // Show finger for GO/CASHOUT buttons only when safe and not blocked by modals
           (hasClaimedBonus &&
+            !showPayoutModal &&
+            !tutorialTarget &&
+            isNextLaneSafe && // MASTER DIRECTIVE: Only show finger when lane is safe
             (gameState === "idle" ||
               gameState === "playing" ||
               gameState === "atFinish"))

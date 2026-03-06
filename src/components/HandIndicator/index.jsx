@@ -10,7 +10,7 @@ const FINGER_IMAGE =
  * Points to target button with GPU-accelerated animations
  */
 export const HandIndicator = memo(function HandIndicator({
-  targetButton, // "GO", "CASHOUT", or "CLAIM"
+  targetButton, // "GO", "CASHOUT", "CLAIM", or "NEXT"
   visible = false,
 }) {
   const handRef = useRef(null);
@@ -31,7 +31,9 @@ export const HandIndicator = memo(function HandIndicator({
           ? ".play-button"
           : targetButton === "CLAIM"
             ? ".claim-bonus-button"
-            : ".cashout-button",
+            : targetButton === "NEXT"
+              ? ".payout-modal-button"
+              : ".cashout-button",
       );
 
       if (button && handRef.current) {

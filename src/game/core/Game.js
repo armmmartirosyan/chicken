@@ -285,6 +285,18 @@ export class Game {
   }
 
   /**
+   * Check if next lane is safe to jump (Predictive Safety-Lock)
+   * @param {number} currentLaneIndex - Current lane index
+   * @returns {boolean} - True if safe, false if collision predicted
+   */
+  isNextLaneSafe(currentLaneIndex) {
+    if (this.carSpawner) {
+      return this.carSpawner.isNextLaneSafe(currentLaneIndex, 0.4);
+    }
+    return true; // Default to safe if no car spawner
+  }
+
+  /**
    * Finish current lane (turn current lane's coin to gold)
    */
   finishCurrentLane() {

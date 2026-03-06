@@ -9,6 +9,7 @@ class SettingsManager {
   static DEFAULTS = {
     soundEnabled: true,
     musicEnabled: true,
+    hasCompletedFirstRun: false,
   };
 
   constructor() {
@@ -115,6 +116,20 @@ class SettingsManager {
    */
   getAll() {
     return { ...this.settings };
+  }
+
+  /**
+   * Check if the user has completed their first guided game
+   */
+  getHasCompletedFirstRun() {
+    return this.get("hasCompletedFirstRun");
+  }
+
+  /**
+   * Mark the first guided game as complete
+   */
+  setHasCompletedFirstRun(value = true) {
+    this.set("hasCompletedFirstRun", value);
   }
 
   /**

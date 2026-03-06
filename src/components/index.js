@@ -7,3 +7,4 @@ export { HandIndicator } from "./HandIndicator";
 export { LiveWinsTicker } from "./LiveWinsTicker";
 export { Checkbox } from "./Checkbox";
 export { WelcomeModal } from "./WelcomeModal";
+export { PayoutModal } from "./PayoutModal";

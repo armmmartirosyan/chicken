@@ -770,8 +770,54 @@ export class CarSpawner {
     };
   }
 
-  /**
-   * Reset spawner state (for new game)
+  /**   * PREDICTIVE SAFETY-LOCK: Check if next lane is safe to jump
+   * Used by "Go" button to prevent bad moves before they happen
+   *
+   * @param {number} currentLaneIndex - Chicken's current lane index
+   * @param {number} jumpDuration - Time it takes to complete jump (0.4 seconds)
+   * @returns {boolean} - True if safe to jump, false if collision predicted
+   */
+  isNextLaneSafe(currentLaneIndex, jumpDuration = 0.4) {
+    if (!this.chicken) return true; // No chicken reference, assume safe
+
+    const nextLaneIndex = currentLaneIndex + 1;
+    const chickenY = this.chicken.container?.position?.y || this.chicken.y;
+
+    // Safety margins: Define the landing zone where chicken will be after jump
+    const COLLISION_BUFFER = 200; // Pixels above/below chicken for safety check
+    const landingZoneTop = chickenY - COLLISION_BUFFER;
+    const landingZoneBottom = chickenY + COLLISION_BUFFER;
+
+    // Check all active cars in the next lane
+    for (const car of this.activeCars) {
+      if (!car.active || car.lane !== nextLaneIndex) continue;
+
+      // Get car's current position
+      const carY = car.container?.position?.y || car.y;
+      const carSpeed = car.speed; // pixels per second
+
+      // Predict car's position after jump completes
+      const predictedCarY = carY + carSpeed * jumpDuration;
+
+      // Check if predicted car position overlaps with landing zone
+      const carHeight = car.height || 98;
+      const carTopY = predictedCarY - carHeight / 2;
+      const carBottomY = predictedCarY + carHeight / 2;
+
+      // Check overlap: Car will be in landing zone if any part overlaps
+      const willOverlap = !(
+        carBottomY < landingZoneTop || carTopY > landingZoneBottom
+      );
+
+      if (willOverlap) {
+        return false; // Unsafe - car will be in landing zone
+      }
+    }
+
+    return true; // Safe - no cars predicted in landing zone
+  }
+
+  /**   * Reset spawner state (for new game)
    * EMERGENCY FIX: Aggressive stage wipe with synchronous removal
    * CRITICAL: This must completely clear the stage before chicken resets
    */
