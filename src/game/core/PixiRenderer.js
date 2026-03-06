@@ -57,7 +57,8 @@ export class PixiRenderer {
     // Camera follow target (typically the chicken)
     this.cameraTarget = null;
     this.cameraOffsetY = 0; // Vertical offset for centering
-    this.chickenScreenAnchor = 0.1; // Chicken fixed at 10% from left when world scrolls
+    this.chickenScreenAnchor = 0.1; // Dynamic horizontal anchor (recalculated on resize)
+    this.chickenScreenX = 0; // Cached screen X position for chicken
 
     // Configuration with optimal defaults
     this.config = {
@@ -329,10 +330,11 @@ export class PixiRenderer {
 
   /**
    * Update viewport scaling - Vertical-Anchor Strategy (ATOMIC OPERATION)
-   * CRITICAL: This must update THREE properties atomically for instant visual response:
+   * CRITICAL: This must update FOUR properties atomically for instant visual response:
    * 1. Renderer size (canvas dimensions)
    * 2. Global scale (calculated from viewport height)
    * 3. WorldContainer scale (applied to all entities)
+   * 4. Dynamic horizontal anchor (aspect-ratio aware)
    *
    * ARCHITECTURE NOTE:
    * We scale worldContainer (child of app.stage), NOT app.stage itself.
@@ -367,6 +369,20 @@ export class PixiRenderer {
     // worldContainer handles all game scaling, stage remains unscaled for UI layer
     this.app.stage.scale.set(1.0);
 
+    // ━━━ ATOMIC OPERATION 4: Dynamic Horizontal Anchor (Aspect-Ratio Aware) ━━━
+    // RESPONSIVE X-ANCHOR: Adjust chicken position based on aspect ratio
+    // Narrow screens (mobile/portrait/tablet): Push chicken inward (22%) to prevent clipping
+    // Wide screens (desktop/landscape): Keep chicken at left edge (10%) for maximum forward view
+    const aspectRatio = viewportWidth / viewportHeight;
+    const isNarrow = aspectRatio < 1.0; // Portrait or square aspect ratio
+
+    // CRITICAL: Use 22% anchor for narrow screens, 10% for wide screens
+    // This prevents the chicken from being clipped on mobile devices
+    this.chickenScreenAnchor = isNarrow ? 0.22 : 0.1;
+
+    // Cache the computed screen X position for use in camera calculations
+    this.chickenScreenX = viewportWidth * this.chickenScreenAnchor;
+
     // LEFT-ALIGNED: No horizontal centering (horizontally scrollable game)
     // Lock to left edge (x=0) for all viewport sizes
     // CRITICAL: This must NEVER be changed elsewhere - horizontal position is ALWAYS 0
@@ -386,6 +402,9 @@ export class PixiRenderer {
    * The world is a MIRROR of the chicken's visual progress:
    * - Y-axis: worldContainer.y = verticalFocalPoint - (chicken.y * scale)
    * - X-axis: worldContainer.x = chickenScreenX - (chicken.x * scale)
+   *
+   * ASPECT-RATIO AWARE: chickenScreenX is now dynamically calculated in updateViewport()
+   * based on the current aspect ratio (22% for narrow, 10% for wide)
    */
   updateCamera() {
     if (!this.worldContainer || !this.cameraTarget) return;
@@ -401,15 +420,16 @@ export class PixiRenderer {
       verticalFocalPoint - chickenScaledY + this.cameraOffsetY;
 
     // ━━━ X-AXIS (HORIZONTAL): Atomic mirror of chicken position ━━━
+    // RESPONSIVE: Use cached chickenScreenX (calculated in updateViewport based on aspect ratio)
     // The chicken's world X directly determines the camera X
     // No separate animation - this runs EVERY FRAME
-    const chickenScreenX = this.viewportWidth * this.chickenScreenAnchor; // 10% from left
     const chickenScaledX = this.cameraTarget.x * this.currentScale;
-    const rawTargetX = chickenScreenX - chickenScaledX;
+    const rawTargetX = this.chickenScreenX - chickenScaledX;
 
     // ━━━ DUAL CLAMP: Prevents empty space on BOTH sides ━━━
     // START CLAMP: worldContainer.x <= 0 (never show left of start image)
     // FINISH CLAMP: worldContainer.x >= maxScroll (never show right of finish image)
+    // ASPECT-AWARE: maxScroll now accounts for the dynamic horizontal anchor
     const worldScaledWidth = this.worldWidth * this.currentScale;
     const maxScroll = -(worldScaledWidth - this.viewportWidth);
 
