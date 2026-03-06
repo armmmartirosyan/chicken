@@ -277,6 +277,13 @@ export default function App() {
         // Play win sound when chicken reaches finish
         audioEngine.onWin();
 
+        // Show win notification animation
+        const winnings = roundCurrency(winValueRef.current);
+        const game = window.__GAME_INSTANCE__;
+        if (game && game.showWinNotification) {
+          game.showWinNotification(winnings, 3000);
+        }
+
         setGameState("atFinish");
         gameEvents.emit("game:finished", {
           laneIndex,
@@ -287,7 +294,7 @@ export default function App() {
 
     const unsubscribe = gameEvents.on("lane:changed", handleLaneChange);
     return () => unsubscribe();
-  }, [gameState]);
+  }, [gameState, winValueRef]);
 
   // Update current win value in real-time while playing
   useEffect(() => {
@@ -342,12 +349,6 @@ export default function App() {
 
     // Update balance
     setBalance((prev) => roundCurrency(prev + winnings));
-
-    // Show win notification animation
-    const game = window.__GAME_INSTANCE__;
-    if (game && game.showWinNotification) {
-      game.showWinNotification(winnings, 3000);
-    }
 
     // Transition to won state
     setGameState("won");
