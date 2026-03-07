@@ -198,8 +198,6 @@ export default function App() {
   useEffect(() => {
     if (!isGameLoading && !hasClaimedBonus) {
       setShowWelcomeModal(true);
-      // Duck music when modal appears
-      audioEngine.duckMusic();
       // Delay finger appearance to prevent flicker
       setTimeout(() => {
         setTutorialTarget("CLAIM");
@@ -224,8 +222,6 @@ export default function App() {
     setTutorialFingerVisible(false);
     setTimeout(() => {
       setShowWelcomeModal(false);
-      // Restore music volume after modal closes
-      audioEngine.restoreMusic();
       setTutorialTarget(null); // Clear tutorial target to let game state control it
       setTutorialFingerVisible(true);
     }, 300);
@@ -236,8 +232,6 @@ export default function App() {
     // Hide modal and finger
     setShowPayoutModal(false);
     setTutorialFingerVisible(false);
-    // Restore music volume after modal closes
-    audioEngine.restoreMusic();
 
     setTimeout(() => {
       // Clear tutorial target and resume game
@@ -280,8 +274,6 @@ export default function App() {
           }
           setCurrentPayoutLane(laneIndex);
           setShowPayoutModal(true);
-          // Duck music when modal appears
-          audioEngine.duckMusic();
           setTutorialTarget("NEXT");
           setTutorialFingerVisible(true);
         }, 200); // Wait for gate/coin animation to complete

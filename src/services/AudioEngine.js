@@ -281,30 +281,6 @@ class AudioEngine {
   }
 
   /**
-   * Duck music volume for modals (reduce to 20%)
-   */
-  duckMusic() {
-    if (this.musicGainNode && this.initialized) {
-      this.musicGainNode.gain.setValueAtTime(
-        this.musicVolume * 0.2,
-        this.audioContext.currentTime,
-      );
-    }
-  }
-
-  /**
-   * Restore music volume after modal (restore to 100%)
-   */
-  restoreMusic() {
-    if (this.musicGainNode && this.initialized) {
-      this.musicGainNode.gain.setValueAtTime(
-        this.musicVolume,
-        this.audioContext.currentTime,
-      );
-    }
-  }
-
-  /**
    * Load a sound dynamically from a data URI (for ConfettiManager)
    * @param {string} soundKey - Unique key for the sound
    * @param {string} dataUri - Data URI (data:audio/mp3;base64,...)
