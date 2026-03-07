@@ -360,6 +360,7 @@ export default function App() {
         setBalance((prev) => roundCurrency(prev + winnings));
         setGameState("won");
         setShowCashoutDialog(true);
+        setTutorialTarget("TAKE");
       });
     } else {
       // Fallback if VFX manager unavailable
@@ -474,6 +475,7 @@ export default function App() {
           // Show finger for GO/CASHOUT buttons only when safe and not blocked by modals
           (hasClaimedBonus &&
             !showPayoutModal &&
+            !showCashoutDialog &&
             !tutorialTarget &&
             isNextLaneSafe && // MASTER DIRECTIVE: Only show finger when lane is safe
             (gameState === "idle" ||

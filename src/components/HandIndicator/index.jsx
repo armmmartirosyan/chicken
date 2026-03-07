@@ -33,7 +33,9 @@ export const HandIndicator = memo(function HandIndicator({
             ? ".claim-bonus-button"
             : targetButton === "NEXT"
               ? ".payout-modal-button"
-              : ".cashout-button",
+              : targetButton === "TAKE"
+                ? ".cashout-dialog-button"
+                : ".cashout-button",
       );
 
       if (button && handRef.current) {

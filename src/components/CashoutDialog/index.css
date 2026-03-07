@@ -17,8 +17,21 @@
   justify-content: space-between;
 }
 
+/* Swimming Logo Animation - GPU Accelerated */
+@keyframes swim {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
 .cashout-dialog-logo {
   width: 70%;
+  animation: swim 3s infinite ease-in-out;
+  will-change: transform; /* GPU optimization hint */
 }
 
 .cashout-dialog-actions {
