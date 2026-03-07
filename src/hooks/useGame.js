@@ -176,10 +176,28 @@ export function useGame(canvasRef, config, scrollContainerRef) {
           return;
         }
 
-        // CRITICAL: Initialize win notification AFTER textures are loaded
+        // Get container element (parent of canvas) - needed for managers
+        const containerElement = canvas.parentElement;
+
+        // Store container element in game for win notification and confetti positioning
+        if (game.setContainerElement && containerElement) {
+          game.setContainerElement(containerElement);
+        }
+
+        // Initialize win notification AFTER textures are loaded
         // This ensures the win-notification texture exists
         if (game.initializeWinDisplay) {
           game.initializeWinDisplay();
+        }
+
+        // Initialize VFX Manager (confetti + coin celebration)
+        // Uses Promise.all for synchronized asset loading
+        if (game.initializeVFXManager) {
+          const vfxStatus = await game.initializeVFXManager();
+          console.log(
+            "[useGame] VFX Manager initialization status:",
+            vfxStatus,
+          );
         }
 
         // Get loaded textures with fallbacks
@@ -382,14 +400,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
         laneWidthRef.current = config.laneWidth; // Store for precise lane-based camera
 
         // Initialize car spawner with road, chicken, gate manager, and container element
-        // Get container element (parent of canvas)
-        const containerElement = canvas.parentElement;
-
-        // Store container element in game for win notification positioning
-        if (game.setContainerElement && containerElement) {
-          game.setContainerElement(containerElement);
-        }
-
+        // Note: containerElement was already obtained and set earlier (before confetti init)
         if (game.carSpawner) {
           try {
             game.carSpawner.initialize(
@@ -690,6 +701,13 @@ export function useGame(canvasRef, config, scrollContainerRef) {
           gameEvents.emit("lane:changed", {
             laneIndex: nextLane,
             oldLaneIndex: currentLane,
+          });
+
+          // Emit game complete event for confetti VFX
+          // This triggers ConfettiManager to play celebration animation
+          gameEvents.emit("gameComplete", {
+            finalLane: nextLane,
+            totalLanes: totalLanesRef.current,
           });
         }, 400); // Match jump duration
       }

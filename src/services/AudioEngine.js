@@ -314,6 +314,39 @@ class AudioEngine {
   }
 
   /**
+   * Load a sound dynamically from a data URI (for ConfettiManager)
+   * @param {string} soundKey - Unique key for the sound
+   * @param {string} dataUri - Data URI (data:audio/mp3;base64,...)
+   */
+  async loadSound(soundKey, dataUri) {
+    if (!this.initialized) {
+      console.warn(
+        `AudioEngine not initialized, cannot load sound: ${soundKey}`,
+      );
+      return;
+    }
+
+    try {
+      const response = await fetch(dataUri);
+      const arrayBuffer = await response.arrayBuffer();
+      const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+      this.buffers.set(soundKey, audioBuffer);
+      console.log(`[AudioEngine] Loaded sound: ${soundKey}`);
+    } catch (error) {
+      console.warn(`Failed to load sound: ${soundKey}`, error);
+    }
+  }
+
+  /**
+   * Play a sound by key (alias for playSFX for ConfettiManager compatibility)
+   * @param {string} soundKey - Key of the sound to play
+   * @param {number} volume - Volume level (0.0 to 1.0)
+   */
+  playSound(soundKey, volume = 1.0) {
+    return this.playSFX(soundKey, volume, false);
+  }
+
+  /**
    * Cleanup (call on unmount)
    */
   destroy() {

@@ -2,6 +2,8 @@ import { PixiRenderer } from "./PixiRenderer.js";
 import { CarSpawner } from "../systems/CarSpawner.js";
 import { CoinManager } from "../managers/CoinManager.js";
 import { GateManager } from "../managers/GateManager.js";
+import { VFXManager } from "../managers/VFXManager.js";
+import { audioEngine } from "../../services/AudioEngine.js";
 import { Container, Sprite, Text } from "pixi.js";
 
 /**
@@ -25,6 +27,7 @@ export class Game {
     this.carSpawner = null;
     this.coinManager = null;
     this.gateManager = null;
+    this.vfxManager = null;
 
     // Entity references for dynamic updates
     this.road = null;
@@ -69,6 +72,9 @@ export class Game {
 
     // Initialize gate manager
     this.gateManager = new GateManager(this.config);
+
+    // Initialize VFX manager (confetti + coin celebration) with audioEngine
+    this.vfxManager = new VFXManager(this.config, this.renderer, audioEngine);
 
     // NOTE: Win notification will be initialized AFTER textures load in useGame.js
     // This ensures the win-notification texture exists before creating the sprite
@@ -568,6 +574,48 @@ export class Game {
   }
 
   /**
+   * Initialize VFX manager (confetti + coin celebration)
+   * MUST be called AFTER renderer is initialized
+   * Uses Promise.all for synchronized asset loading
+   * @returns {Promise<Object>} Status of both VFX systems
+   */
+  async initializeVFXManager() {
+    if (!this.vfxManager || !this.renderer || !this.containerElement) {
+      console.log(this.vfxManager, this.renderer, this.containerElement);
+
+      console.warn("[Game] Cannot initialize VFXManager: missing dependencies");
+      return { confetti: false, coins: false, bothReady: false };
+    }
+
+    try {
+      const status = await this.vfxManager.initialize(this.containerElement);
+      if (status.bothReady) {
+        console.log(
+          "[Game] VFXManager initialized successfully (both systems ready)",
+        );
+      } else if (status.confetti || status.coins) {
+        console.warn(
+          "[Game] VFXManager partially initialized (some assets missing)",
+          status,
+        );
+      } else {
+        console.warn(
+          "[Game] VFXManager initialization failed - all VFX disabled",
+        );
+      }
+      return status;
+    } catch (error) {
+      console.error("[Game] VFXManager initialization error:", error);
+      return {
+        confetti: false,
+        coins: false,
+        bothReady: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
    * Destroy game and cleanup resources
    */
   destroy() {
@@ -603,6 +651,10 @@ export class Game {
 
     if (this.gateManager) {
       this.gateManager.destroy();
+    }
+
+    if (this.vfxManager) {
+      this.vfxManager.dispose();
     }
 
     if (this.entityManager) {
