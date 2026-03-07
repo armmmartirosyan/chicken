@@ -132,13 +132,12 @@ export class ConfettiManager {
       return;
     }
 
-    const { confettiSfxBase64, victorySfxBase64 } = CONFETTI_AUDIO;
+    const { confettiSfxBase64 } = CONFETTI_AUDIO;
 
     // Audio Base64 strings already contain full data URIs
     // No need to add prefixes
     try {
       await this.audioEngine.loadSound?.("confetti", confettiSfxBase64);
-      await this.audioEngine.loadSound?.("victory", victorySfxBase64);
       this.audioLoaded = true;
       console.log("[ConfettiManager] Audio files loaded");
     } catch (error) {
@@ -217,7 +216,6 @@ export class ConfettiManager {
   /**
    * Play synchronized audio tracks
    * - Confetti SFX plays immediately
-   * - Victory music plays after 100ms delay
    * Loads audio on first play if not already loaded
    */
   async playAudio() {
@@ -231,10 +229,6 @@ export class ConfettiManager {
     try {
       // Play confetti burst sound immediately
       this.audioEngine.playSound?.("confetti");
-
-      setTimeout(() => {
-        this.audioEngine.playSound?.("victory");
-      }, 100);
     } catch (error) {
       console.warn("[ConfettiManager] Audio playback failed:", error);
     }

@@ -3,7 +3,6 @@ import { settingsManager } from "./SettingsManager.js";
 // Import all audio files as Base64-inlined modules
 import jumpSound from "../assets/audios/jump.webm";
 import chickSound from "../assets/audios/chick.webm";
-import carSound from "../assets/audios/car.webm";
 import cashoutSound from "../assets/audios/cashout.webm";
 import winSound from "../assets/audios/win.webm";
 import soundtrack from "../assets/audios/Soundtrack.webm";
@@ -43,7 +42,6 @@ class AudioEngine {
     this.audioFiles = {
       jump: jumpSound,
       chick: chickSound,
-      car: carSound,
       cashout: cashoutSound,
       win: winSound,
       music: soundtrack,
@@ -264,13 +262,6 @@ class AudioEngine {
 
   onButtonClick() {
     this.playSFX("buttonClick", 0.6);
-  }
-
-  onCar() {
-    // Random car sound with variation
-    if (Math.random() < 0.3) {
-      this.playSFX("car", 0.5);
-    }
   }
 
   onCashout() {

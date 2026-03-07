@@ -43,7 +43,6 @@ export const CONFETTI_SPRITESHEET = {
 
 export const CONFETTI_AUDIO = {
   confettiSfxBase64: "", // ← EMPTY SLOT - User fills this
-  victorySfxBase64: "", // ← EMPTY SLOT - User fills this
 };
 ```
 
@@ -176,7 +175,6 @@ export const CONFETTI_SPRITESHEET = {
 
 export const CONFETTI_AUDIO = {
   confettiSfxBase64: "SUQzBAAAAAAAI1RTU0...", // ← Paste confetti audio Base64
-  victorySfxBase64: "SUQzBAAAAAAAI1RTU0...", // ← Paste victory audio Base64
 };
 ```
 

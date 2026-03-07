@@ -284,6 +284,9 @@ export default function App() {
           game.showWinNotification(winnings, 3000);
         }
 
+        // Play cashout sound
+        audioEngine.onCashout();
+
         setGameState("atFinish");
         gameEvents.emit("game:finished", {
           laneIndex,
@@ -335,9 +338,6 @@ export default function App() {
   // Handle cashout - trigger win animation and payout
   const handleCashout = useCallback(() => {
     if (gameState !== "atFinish") return;
-
-    // Play cashout sound
-    audioEngine.onCashout();
 
     // Turn current lane's coin to gold
     if (finishCurrentLaneFn) {

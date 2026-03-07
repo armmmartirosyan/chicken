@@ -79,9 +79,6 @@ export const CONFETTI_SPRITESHEET = {
 export const CONFETTI_AUDIO = {
   // Sound effect for confetti burst
   confettiSfxBase64: "", // ← USER FILLS THIS
-
-  // Victory fanfare music
-  victorySfxBase64: "", // ← USER FILLS THIS
 };
 ```
 
@@ -98,7 +95,6 @@ import {
 
 const imageDataURI = `data:image/png;base64,${CONFETTI_SPRITESHEET.imageBase64}`;
 const confettiAudioURI = `data:audio/mp3;base64,${CONFETTI_AUDIO.confettiSfxBase64}`;
-const victoryAudioURI = `data:audio/mp3;base64,${CONFETTI_AUDIO.victorySfxBase64}`;
 ```
 
 #### Step 2: PixiJS Texture Loading
@@ -574,7 +570,6 @@ console.timeEnd("confetti-play");
 
 - [ ] CONFETTI_SPRITESHEET.imageBase64 populated (not empty string)
 - [ ] CONFETTI_AUDIO.confettiSfxBase64 populated
-- [ ] CONFETTI_AUDIO.victorySfxBase64 populated
 - [ ] Frame count verified (40 frames extracted correctly)
 - [ ] Z-index tested (confetti always on top)
 - [ ] Memory leak test passed (no lingering textures)
