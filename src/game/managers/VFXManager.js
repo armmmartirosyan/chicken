@@ -1,22 +1,24 @@
 import { ConfettiManager } from "./ConfettiManager.js";
 import { CoinCelebrationManager } from "./CoinCelebrationManager.js";
+import { CashoutVFXManager } from "./CashoutVFXManager.js";
 import { gameEvents } from "../core/GameEventBus.js";
 
 /**
- * VFXManager - Coordinates simultaneous celebration VFX
+ * VFXManager - Coordinates celebration and cashout VFX
  *
- * Orchestrates ConfettiManager and CoinCelebrationManager to trigger
- * synchronized celebrations on game completion with parallel asset loading.
+ * Orchestrates ConfettiManager, CoinCelebrationManager, and CashoutVFXManager
+ * with parallel asset loading and centralized control.
  *
  * Architecture:
- * - Uses Promise.all to load both spritesheets simultaneously
- * - Ensures both managers trigger on same gameComplete event
- * - Provides centralized control for celebration VFX
+ * - Uses Promise.all to load all VFX spritesheets simultaneously
+ * - ConfettiManager & CoinCelebrationManager: Auto-trigger on gameComplete
+ * - CashoutVFXManager: Manual trigger from handleCashout with completion callback
  *
  * Layering:
  * - Confetti: z-index 999 (background, fullscreen)
+ * - Cashout: z-index 800 (above gameplay, centered on chicken)
  * - Coins: z-index 500 (mid-ground, 70% viewport)
- * - React UI: Top layer (1500€ win amount display)
+ * - React UI: Top layer (dialogs, win amounts)
  */
 export class VFXManager {
   constructor(config, pixiRenderer, audioEngine) {
@@ -28,6 +30,7 @@ export class VFXManager {
     // Manager instances
     this.confettiManager = null;
     this.coinCelebrationManager = null;
+    this.cashoutVFXManager = null;
 
     // Initialization state
     this.initialized = false;
@@ -56,12 +59,17 @@ export class VFXManager {
       this.config,
       this.pixiRenderer,
     );
+    this.cashoutVFXManager = new CashoutVFXManager(
+      this.config,
+      this.pixiRenderer,
+    );
 
     try {
-      // Load both VFX systems in parallel using Promise.all
-      const [confettiSuccess, coinSuccess] = await Promise.all([
+      // Load all VFX systems in parallel using Promise.all
+      const [confettiSuccess, coinSuccess, cashoutSuccess] = await Promise.all([
         this.confettiManager.initialize(containerElement),
         this.coinCelebrationManager.initialize(containerElement),
+        this.cashoutVFXManager.initialize(containerElement),
       ]);
 
       this.initialized = true;
@@ -70,14 +78,15 @@ export class VFXManager {
       const status = {
         confetti: confettiSuccess,
         coins: coinSuccess,
-        bothReady: confettiSuccess && coinSuccess,
+        cashout: cashoutSuccess,
+        allReady: confettiSuccess && coinSuccess && cashoutSuccess,
       };
 
       console.log("[VFXManager] Initialization complete:", status);
 
-      if (status.bothReady) {
+      if (status.allReady) {
         console.log(
-          "[VFXManager] ✅ Both celebration VFX systems ready for synchronized playback",
+          "[VFXManager] ✅ All VFX systems ready (confetti, coins, cashout)",
         );
       } else {
         console.warn(
@@ -85,6 +94,7 @@ export class VFXManager {
           {
             confetti: confettiSuccess ? "✅ Ready" : "❌ Not Ready",
             coins: coinSuccess ? "✅ Ready" : "❌ Not Ready",
+            cashout: cashoutSuccess ? "✅ Ready" : "❌ Not Ready",
           },
         );
       }
@@ -95,7 +105,8 @@ export class VFXManager {
       return {
         confetti: false,
         coins: false,
-        bothReady: false,
+        cashout: false,
+        allReady: false,
         error: error.message,
       };
     }
@@ -150,6 +161,28 @@ export class VFXManager {
   }
 
   /**
+   * Trigger cashout animation with completion callback
+   * Used by handleCashout to show animation before React dialog
+   *
+   * @param {Function} onComplete - Callback when animation finishes
+   */
+  playCashoutAnimation(onComplete) {
+    console.log("[VFXManager] Triggering cashout animation");
+
+    if (!this.initialized || !this.cashoutVFXManager) {
+      console.warn(
+        "[VFXManager] Cannot play cashout: VFXManager not initialized",
+      );
+      // Immediately call completion if animation unavailable
+      if (onComplete) onComplete();
+      return;
+    }
+
+    // Play cashout animation with completion callback
+    this.cashoutVFXManager.play(onComplete);
+  }
+
+  /**
    * Stop all currently playing celebrations
    * Useful for interrupting celebrations (e.g., user closes modal)
    */
@@ -162,6 +195,10 @@ export class VFXManager {
 
     if (this.coinCelebrationManager) {
       this.coinCelebrationManager.destroy();
+    }
+
+    if (this.cashoutVFXManager) {
+      this.cashoutVFXManager.destroy();
     }
   }
 
@@ -181,6 +218,11 @@ export class VFXManager {
     if (this.coinCelebrationManager) {
       this.coinCelebrationManager.dispose();
       this.coinCelebrationManager = null;
+    }
+
+    if (this.cashoutVFXManager) {
+      this.cashoutVFXManager.dispose();
+      this.cashoutVFXManager = null;
     }
 
     // Remove event listeners

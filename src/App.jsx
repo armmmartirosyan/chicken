@@ -10,6 +10,7 @@ import {
   WelcomeModal,
   PayoutModal,
 } from "./components";
+import CashoutDialog from "./components/CashoutDialog";
 import { gameEvents } from "./game/core/GameEventBus.js";
 import { liveWinService } from "./services/LiveWinService.js";
 import { audioEngine } from "./services/AudioEngine.js";
@@ -54,6 +55,9 @@ export default function App() {
   // Payout modal state (persistent across all games)
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [currentPayoutLane, setCurrentPayoutLane] = useState(null);
+
+  // Cashout dialog state
+  const [showCashoutDialog, setShowCashoutDialog] = useState(false);
 
   // Predictive Safety-Lock state
   const [isNextLaneSafe, setIsNextLaneSafe] = useState(true);
@@ -347,17 +351,23 @@ export default function App() {
     // Calculate winnings using ref for instant value
     const winnings = roundCurrency(winValueRef.current);
 
-    // Update balance
-    setBalance((prev) => roundCurrency(prev + winnings));
-
-    // Transition to won state
-    setGameState("won");
-
-    // Reset to idle after win animation completes
-    setTimeout(() => {
-      handleWinComplete();
-    }, 3100); // Slightly longer than notification duration
-  }, [gameState, finishCurrentLaneFn, handleWinComplete]);
+    // Trigger cashout animation with sequential handoff to React dialog
+    const game = window.__GAME_INSTANCE__;
+    if (game && game.vfxManager) {
+      // Play cashout animation at chicken position, then show dialog
+      game.vfxManager.playCashoutAnimation(() => {
+        // Animation complete - update balance and show dialog
+        setBalance((prev) => roundCurrency(prev + winnings));
+        setGameState("won");
+        setShowCashoutDialog(true);
+      });
+    } else {
+      // Fallback if VFX manager unavailable
+      setBalance((prev) => roundCurrency(prev + winnings));
+      setGameState("won");
+      setShowCashoutDialog(true);
+    }
+  }, [gameState, finishCurrentLaneFn]);
 
   // MASTER DIRECTIVE: Frame-by-frame Predictive Safety-Lock
   // Check if next lane is safe every frame during gameplay
@@ -442,6 +452,15 @@ export default function App() {
         visible={showPayoutModal}
         lane={currentPayoutLane}
         onNext={handlePayoutNext}
+      />
+
+      {/* Cashout Dialog - shown after cashout animation completes */}
+      <CashoutDialog
+        isOpen={showCashoutDialog}
+        onClose={() => {
+          setShowCashoutDialog(false);
+          handleWinComplete();
+        }}
       />
 
       {/* Hand indicator - context-aware positioning with smooth transitions */}

@@ -1,0 +1,73 @@
+/* Cashout Dialog Overlay - Full-screen semi-transparent background */
+.cashout-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 10000;
+  pointer-events: auto;
+} /* Modal Container - Centers the dialog */
+.cashout-dialog-container {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Dialog Box - Centered container */
+.cashout-dialog-box {
+  pointer-events: auto;
+  width: 90%;
+  max-width: 500px;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #34343490;
+  border: 2px solid white;
+  outline: 4px solid #0021fb;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+  border-radius: 15px;
+  padding: 30px;
+  position: relative;
+}
+
+/* Empty content div - ready for customization */
+.cashout-dialog-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+  font-family: "Press Start 2P", monospace;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .cashout-dialog-box {
+    width: 95%;
+    max-width: none;
+    padding: 20px;
+    min-height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cashout-dialog-box {
+    padding: 15px;
+    min-height: 200px;
+  }
+}
+
+/* Ensure dialog stays centered even on orientation change */
+@media (orientation: landscape) and (max-height: 500px) {
+  .cashout-dialog-box {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}

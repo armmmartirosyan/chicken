@@ -2,7 +2,6 @@ import { AnimatedSprite, Assets, Texture, Rectangle } from "pixi.js";
 import { gameEvents } from "../core/GameEventBus.js";
 import {
   CONFETTI_SPRITESHEET,
-  CONFETTI_AUDIO,
   validateConfettiAssets,
 } from "../../constants/vfxAssets.js";
 
@@ -17,9 +16,6 @@ export class ConfettiManager {
     this.animatedSprite = null; // PIXI.AnimatedSprite instance
     this.isPlaying = false; // Prevents double-play
     this.textures = null; // Array of PIXI.Texture (40 frames)
-
-    // Audio state
-    this.audioLoaded = false; // Track if audio has been loaded
 
     // Viewport tracking for responsive scaling
     this.containerElement = null;
@@ -123,29 +119,6 @@ export class ConfettiManager {
   }
 
   /**
-   * Load confetti audio files into AudioEngine
-   * Converts Base64 data to playable audio sources
-   * Loads lazily on first play to ensure AudioEngine is initialized
-   */
-  async loadConfettiAudio() {
-    if (!this.audioEngine || this.audioLoaded) {
-      return;
-    }
-
-    const { confettiSfxBase64 } = CONFETTI_AUDIO;
-
-    // Audio Base64 strings already contain full data URIs
-    // No need to add prefixes
-    try {
-      await this.audioEngine.loadSound?.("confetti", confettiSfxBase64);
-      this.audioLoaded = true;
-      console.log("[ConfettiManager] Audio files loaded");
-    } catch (error) {
-      console.warn("[ConfettiManager] Audio loading failed:", error);
-    }
-  }
-
-  /**
    * Play confetti animation
    * Triggered by gameEvents.emit('gameComplete')
    */
@@ -220,11 +193,6 @@ export class ConfettiManager {
    */
   async playAudio() {
     if (!this.audioEngine) return;
-
-    // Load audio files on first play (lazy loading)
-    if (!this.audioLoaded) {
-      await this.loadConfettiAudio();
-    }
 
     try {
       // Play confetti burst sound immediately
