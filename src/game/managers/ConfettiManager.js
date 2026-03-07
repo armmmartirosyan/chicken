@@ -151,24 +151,26 @@ export class ConfettiManager {
     this.animatedSprite = new AnimatedSprite(this.textures);
 
     // Configure animation
-    this.animatedSprite.anchor.set(0.5); // Center origin
+    this.animatedSprite.anchor.set(0.5); // Center origin for perfect centering
     this.animatedSprite.loop = false; // Play once
     this.animatedSprite.animationSpeed = CONFETTI_SPRITESHEET.frameRate / 60; // Convert FPS to speed (28/60 = 0.467)
 
-    // Position at viewport center
+    // Position at absolute screen center (DPI-safe coordinates)
     const app = this.pixiRenderer.app;
-    this.animatedSprite.x = app.view.width / 2;
-    this.animatedSprite.y = app.view.height / 2;
+    const centerX = app.screen.width / 2;
+    const centerY = app.screen.height / 2;
+    this.animatedSprite.position.set(centerX, centerY);
 
-    // Scale to fill viewport
+    // Scale to fill viewport (cover screen on all devices)
     this.scaleToViewport();
 
     // Set z-index (highest layer)
     this.animatedSprite.zIndex = 999;
 
-    // Add to stage
-    app.stage.addChild(this.animatedSprite);
-    app.stage.sortableChildren = true; // Enable z-index sorting
+    // Add to uiLayer (screen-space, not world-space)
+    const uiLayer = this.pixiRenderer.uiLayer || app.stage;
+    uiLayer.addChild(this.animatedSprite);
+    uiLayer.sortableChildren = true; // Enable z-index sorting
 
     // Start animation
     this.animatedSprite.gotoAndPlay(0);
@@ -203,19 +205,28 @@ export class ConfettiManager {
   }
 
   /**
-   * Scale sprite to fill viewport (stretch-to-fit)
+   * Scale sprite to fill viewport (cover screen)
    * Called on play() and resize events
    */
   scaleToViewport() {
     if (!this.animatedSprite || !this.pixiRenderer.app) return;
 
     const app = this.pixiRenderer.app;
-    const viewportWidth = app.view.width;
-    const viewportHeight = app.view.height;
+    const screenWidth = app.screen.width;
+    const screenHeight = app.screen.height;
 
-    // Stretch to fill viewport (non-uniform scaling)
-    this.animatedSprite.width = viewportWidth;
-    this.animatedSprite.height = viewportHeight;
+    // Calculate scale to cover screen (scale-to-fill)
+    const frame = this.animatedSprite.texture;
+    if (frame && frame.width && frame.height) {
+      const scaleX = screenWidth / frame.width;
+      const scaleY = screenHeight / frame.height;
+      const finalScale = Math.max(scaleX, scaleY); // Cover the screen
+      this.animatedSprite.scale.set(finalScale);
+    } else {
+      // Fallback: stretch to fill
+      this.animatedSprite.width = screenWidth;
+      this.animatedSprite.height = screenHeight;
+    }
   }
 
   /**
@@ -229,9 +240,10 @@ export class ConfettiManager {
 
     const app = this.pixiRenderer.app;
 
-    // Reposition to new center
-    this.animatedSprite.x = app.view.width / 2;
-    this.animatedSprite.y = app.view.height / 2;
+    // Reposition to new screen center (absolute coordinates)
+    const centerX = app.screen.width / 2;
+    const centerY = app.screen.height / 2;
+    this.animatedSprite.position.set(centerX, centerY);
 
     // Rescale to new viewport
     this.scaleToViewport();

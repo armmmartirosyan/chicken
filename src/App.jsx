@@ -91,6 +91,20 @@ export default function App() {
       return;
     }
 
+    // ALWAYS-ACTIVE SAFETY-LOCK: Prevent jumping into danger zones
+    // Covers: cars just spawned, cars in viewport, cars exiting viewport
+    if (gameState === "playing") {
+      const game = window.__GAME_INSTANCE__;
+      if (game && game.isNextLaneSafe) {
+        const currentLane = currentLaneRef.current;
+        const isSafe = game.isNextLaneSafe(currentLane);
+        if (!isSafe) {
+          console.log("[Safety-Lock] ⛔ Blocked: Car detected in next lane");
+          return; // Silently block the jump
+        }
+      }
+    }
+
     // Initialize audio engine on first user interaction
     if (!audioEngine.initialized) {
       audioEngine.initialize();
@@ -285,7 +299,7 @@ export default function App() {
         const winnings = roundCurrency(winValueRef.current);
         const game = window.__GAME_INSTANCE__;
         if (game && game.showWinNotification) {
-          game.showWinNotification(winnings, 3000);
+          game.showWinNotification(winnings);
         }
 
         // Play cashout sound
@@ -370,14 +384,16 @@ export default function App() {
     }
   }, [gameState, finishCurrentLaneFn]);
 
-  // MASTER DIRECTIVE: Frame-by-frame Predictive Safety-Lock
+  // ALWAYS-ACTIVE Predictive Safety-Lock
   // Check if next lane is safe every frame during gameplay
   useEffect(() => {
+    // Only run safety checks during active gameplay
     if (gameState !== "playing" && gameState !== "idle") {
       setIsNextLaneSafe(true); // Default to safe when not playing
       return;
     }
 
+    // Continuously monitor next lane safety
     let animationFrameId;
 
     const checkSafety = () => {
@@ -435,7 +451,6 @@ export default function App() {
         disabled={gameState === "playing" || gameState === "atFinish"}
         currentWinValue={currentWinValue}
         goButtonDisabled={
-          !isNextLaneSafe || // MASTER DIRECTIVE: Safety-Lock prevents jumping when unsafe
           showWelcomeModal ||
           showPayoutModal ||
           gameState === "won" ||

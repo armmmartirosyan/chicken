@@ -152,14 +152,15 @@ export class CoinCelebrationManager {
     this.animatedSprite = new AnimatedSprite(this.textures);
 
     // Configure animation
-    this.animatedSprite.anchor.set(0.5); // Center origin
+    this.animatedSprite.anchor.set(0.5); // Center origin for perfect centering
     this.animatedSprite.loop = false; // Play once
     this.animatedSprite.animationSpeed = COIN_SPRITESHEET.frameRate / 60; // Convert FPS to speed
 
-    // Position at viewport center
+    // Position at absolute screen center (DPI-safe coordinates)
     const app = this.pixiRenderer.app;
-    this.animatedSprite.x = app.view.width / 2;
-    this.animatedSprite.y = app.view.height / 2;
+    const centerX = app.screen.width / 2;
+    const centerY = app.screen.height / 2;
+    this.animatedSprite.position.set(centerX, centerY);
 
     // Scale to fit viewport (mid-ground layer)
     this.scaleToViewport();
@@ -167,9 +168,10 @@ export class CoinCelebrationManager {
     // Set z-index (mid-ground, below confetti at 999)
     this.animatedSprite.zIndex = 500;
 
-    // Add to stage
-    app.stage.addChild(this.animatedSprite);
-    app.stage.sortableChildren = true; // Enable z-index sorting
+    // Add to uiLayer (screen-space, not world-space)
+    const uiLayer = this.pixiRenderer.uiLayer || app.stage;
+    uiLayer.addChild(this.animatedSprite);
+    uiLayer.sortableChildren = true; // Enable z-index sorting
 
     // Start animation
     this.animatedSprite.gotoAndPlay(0);
@@ -192,14 +194,14 @@ export class CoinCelebrationManager {
     if (!this.animatedSprite || !this.pixiRenderer.app) return;
 
     const app = this.pixiRenderer.app;
-    const viewportWidth = app.view.width;
-    const viewportHeight = app.view.height;
+    const screenWidth = app.screen.width;
+    const screenHeight = app.screen.height;
 
     // Scale to fit viewport while maintaining aspect ratio
     // Use 70% of viewport for mid-ground layer
     const scale = Math.min(
-      (viewportWidth * 0.7) / this.animatedSprite.texture.width,
-      (viewportHeight * 0.7) / this.animatedSprite.texture.height,
+      (screenWidth * 1.1) / this.animatedSprite.texture.width,
+      (screenHeight * 1.1) / this.animatedSprite.texture.height,
     );
 
     this.animatedSprite.scale.set(scale);
@@ -216,9 +218,10 @@ export class CoinCelebrationManager {
 
     const app = this.pixiRenderer.app;
 
-    // Reposition to new center
-    this.animatedSprite.x = app.view.width / 2;
-    this.animatedSprite.y = app.view.height / 2;
+    // Reposition to new screen center (absolute coordinates)
+    const centerX = app.screen.width / 2;
+    const centerY = app.screen.height / 2;
+    this.animatedSprite.position.set(centerX, centerY);
 
     // Rescale to new viewport
     this.scaleToViewport();

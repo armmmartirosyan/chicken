@@ -766,8 +766,14 @@ export class CarSpawner {
     };
   }
 
-  /**   * PREDICTIVE SAFETY-LOCK: Check if next lane is safe to jump
+  /**   * ALWAYS-ACTIVE PREDICTIVE SAFETY-LOCK
+   * Predict if next lane is safe to jump to
    * Used by "Go" button to prevent bad moves before they happen
+   *
+   * Covers three critical scenarios:
+   * 1. Cars just spawned (entering viewport)
+   * 2. Cars in viewport (currently visible)
+   * 3. Cars about to disappear (leaving viewport)
    *
    * @param {number} currentLaneIndex - Chicken's current lane index
    * @param {number} jumpDuration - Time it takes to complete jump (0.4 seconds)
@@ -779,38 +785,75 @@ export class CarSpawner {
     const nextLaneIndex = currentLaneIndex + 1;
     const chickenY = this.chicken.container?.position?.y || this.chicken.y;
 
-    // Safety margins: Define the landing zone where chicken will be after jump
-    const COLLISION_BUFFER = 200; // Pixels above/below chicken for safety check
-    const landingZoneTop = chickenY - COLLISION_BUFFER;
-    const landingZoneBottom = chickenY + COLLISION_BUFFER;
+    // MOBILE SAFETY BUFFER: Account for frame-rate fluctuations (150ms for extra safety)
+    const MOBILE_BUFFER_MS = 150;
+    const effectiveJumpDuration = jumpDuration + MOBILE_BUFFER_MS / 1000;
 
-    // Check all active cars in the next lane
+    // ULTRA-SAFE COLLISION BUFFER: Covers all three scenarios (spawn/visible/exiting)
+    // Increased from 200 to 600 pixels to catch cars entering, passing, and exiting
+    const COLLISION_BUFFER = 600;
+    const safetyZoneTop = chickenY - COLLISION_BUFFER;
+    const safetyZoneBottom = chickenY + COLLISION_BUFFER;
+
+    // SCENARIO 1, 2, 3: Check ALL active cars in next lane (covers all three scenarios)
     for (const car of this.activeCars) {
       if (!car.active || car.lane !== nextLaneIndex) continue;
 
-      // Get car's current position
       const carY = car.container?.position?.y || car.y;
-      const carSpeed = car.speed; // pixels per second
-
-      // Predict car's position after jump completes
-      const predictedCarY = carY + carSpeed * jumpDuration;
-
-      // Check if predicted car position overlaps with landing zone
+      const carSpeed = car.speed;
       const carHeight = car.height || 98;
-      const carTopY = predictedCarY - carHeight / 2;
-      const carBottomY = predictedCarY + carHeight / 2;
 
-      // Check overlap: Car will be in landing zone if any part overlaps
-      const willOverlap = !(
-        carBottomY < landingZoneTop || carTopY > landingZoneBottom
+      // Check car's CURRENT position (handles recently spawned cars)
+      const currentCarTop = carY - carHeight / 2;
+      const currentCarBottom = carY + carHeight / 2;
+      const currentOverlap = !(
+        currentCarBottom < safetyZoneTop || currentCarTop > safetyZoneBottom
       );
 
-      if (willOverlap) {
-        return false; // Unsafe - car will be in landing zone
+      if (currentOverlap) {
+        console.log(
+          `[Safety] 🚗 Current car at Y=${Math.round(carY)}, blocking jump`,
+        );
+        return false; // Unsafe - car is currently in danger zone
+      }
+
+      // Check car's position THROUGHOUT the jump (not just at the end)
+      // Sample the car's path at multiple points during jump animation
+      const samplePoints = 5; // Check 5 positions during jump
+      for (let i = 0; i <= samplePoints; i++) {
+        const timeOffset = (effectiveJumpDuration * i) / samplePoints;
+        const predictedY = carY + carSpeed * timeOffset;
+        const predictedTop = predictedY - carHeight / 2;
+        const predictedBottom = predictedY + carHeight / 2;
+
+        const futureOverlap = !(
+          predictedBottom < safetyZoneTop || predictedTop > safetyZoneBottom
+        );
+
+        if (futureOverlap) {
+          console.log(
+            `[Safety] 🚗 Car will be at Y=${Math.round(predictedY)} (t=${Math.round(timeOffset * 1000)}ms), blocking jump`,
+          );
+          return false; // Unsafe - car will pass through danger zone
+        }
       }
     }
 
-    return true; // Safe - no cars predicted in landing zone
+    // SCENARIO 1 ENHANCED: Check for imminent spawns (cars about to enter)
+    const nextLaneSpawner = this.laneSpawners?.[nextLaneIndex];
+    if (nextLaneSpawner) {
+      const timeUntilNextSpawn = nextLaneSpawner.spawnTimer;
+
+      // Block if car will spawn during or shortly after jump
+      if (timeUntilNextSpawn < effectiveJumpDuration + 0.5) {
+        console.log(
+          `[Safety] 🚗 Car spawning in ${Math.round(timeUntilNextSpawn * 1000)}ms, blocking jump`,
+        );
+        return false; // Unsafe - car spawning too soon
+      }
+    }
+
+    return true; // Safe - no threats detected in all three scenarios
   }
 
   /**   * Reset spawner state (for new game)

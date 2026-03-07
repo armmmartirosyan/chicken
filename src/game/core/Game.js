@@ -449,7 +449,7 @@ export class Game {
    * @param {number} amount - Win amount to display
    * @param {number} duration - Duration in milliseconds (3000 for auto-win, 2000 for cashout)
    */
-  showWinNotification(amount, duration = 3000) {
+  showWinNotification(amount, duration = 1000) {
     if (!this.winDisplay || !this.winAmountText) {
       console.warn("⚠️ Win display not initialized - cannot show notification");
       return;

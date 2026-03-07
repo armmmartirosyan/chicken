@@ -173,23 +173,26 @@ export class CashoutVFXManager {
     this.animatedSprite = new AnimatedSprite(this.textures);
 
     // Configure animation
-    this.animatedSprite.anchor.set(0.5); // Center origin
+    this.animatedSprite.anchor.set(0.5); // Center origin for perfect centering
     this.animatedSprite.loop = false; // Play once (MASTER DIRECTIVE requirement)
     this.animatedSprite.animationSpeed = CASHOUT_SPRITESHEET.frameRate / 60;
 
-    // Position at chicken location or screen center (most visually impactful)
-    this.positionAtChicken();
+    // Position at absolute screen center (DPI-safe, ignore chicken position)
+    const app = this.pixiRenderer.app;
+    const centerX = app.screen.width / 2;
+    const centerY = app.screen.height / 2;
+    this.animatedSprite.position.set(centerX, centerY);
 
-    // Scale using renderer's currentScale (MASTER DIRECTIVE: inherit global scale)
-    this.scaleWithCurrentScale();
+    // Scale appropriately for screen size
+    this.scaleForScreen();
 
     // Set z-index (above gameplay, below UI modals)
     this.animatedSprite.zIndex = 800;
 
-    // Add to stage
-    const app = this.pixiRenderer.app;
-    app.stage.addChild(this.animatedSprite);
-    app.stage.sortableChildren = true; // Enable z-index sorting
+    // Add to uiLayer (screen-space, not world-space)
+    const uiLayer = this.pixiRenderer.uiLayer || app.stage;
+    uiLayer.addChild(this.animatedSprite);
+    uiLayer.sortableChildren = true; // Enable z-index sorting
 
     // Start animation
     this.animatedSprite.gotoAndPlay(0);
@@ -210,52 +213,32 @@ export class CashoutVFXManager {
   }
 
   /**
-   * Position animation at chicken location or screen center
-   * Uses PixiRenderer's logicalToScreen conversion for accurate positioning
+   * Scale sprite appropriately for screen size
+   * Uses screen dimensions for consistent sizing across devices
    */
-  positionAtChicken() {
+  scaleForScreen() {
     if (!this.animatedSprite || !this.pixiRenderer) return;
 
     const app = this.pixiRenderer.app;
-    const game = this.pixiRenderer.game;
+    const screenWidth = app.screen.width;
+    const screenHeight = app.screen.height;
 
-    // Try to position at chicken if available (most visually impactful)
-    if (game && game.chicken && game.chicken.getPosition) {
-      const chickenPos = game.chicken.getPosition();
-      const screenPos = this.pixiRenderer.logicalToScreen(
-        chickenPos.x,
-        chickenPos.y,
-      );
-
-      this.animatedSprite.x = screenPos.x;
-      this.animatedSprite.y = screenPos.y;
-
-      console.log(
-        `[CashoutVFXManager] Positioned at chicken: (${Math.round(screenPos.x)}, ${Math.round(screenPos.y)})`,
-      );
+    // Scale to fit screen while maintaining aspect ratio
+    const frame = this.animatedSprite.texture;
+    if (frame && frame.width && frame.height) {
+      const scaleX = (screenWidth * 1.1) / frame.width;
+      const scaleY = (screenHeight * 1.1) / frame.height;
+      const finalScale = Math.min(scaleX, scaleY); // Fit within screen
+      this.animatedSprite.scale.set(finalScale);
     } else {
-      // Fallback: Center of screen
-      this.animatedSprite.x = app.view.width / 2;
-      this.animatedSprite.y = app.view.height / 2;
-
-      console.log("[CashoutVFXManager] Positioned at screen center");
+      // Fallback: Use renderer's currentScale
+      const baseScale = this.pixiRenderer.currentScale || 1;
+      this.animatedSprite.scale.set(baseScale);
     }
-  }
 
-  /**
-   * Scale sprite using renderer's currentScale (MASTER DIRECTIVE requirement)
-   * Ensures animation remains proportional on Mobile/Tablet
-   */
-  scaleWithCurrentScale() {
-    if (!this.animatedSprite || !this.pixiRenderer) return;
-
-    // Use renderer's currentScale for responsive sizing
-    const baseScale = this.pixiRenderer.currentScale || 1;
-
-    // Apply scale to sprite
-    this.animatedSprite.scale.set(baseScale);
-
-    console.log(`[CashoutVFXManager] Applied scale: ${baseScale.toFixed(3)}`);
+    console.log(
+      `[CashoutVFXManager] Applied scale: ${this.animatedSprite.scale.x.toFixed(3)}`,
+    );
   }
 
   /**
@@ -267,11 +250,15 @@ export class CashoutVFXManager {
 
     console.log("[CashoutVFXManager] Resizing to new viewport dimensions");
 
-    // Reposition at chicken/center
-    this.positionAtChicken();
+    const app = this.pixiRenderer.app;
 
-    // Rescale with new currentScale
-    this.scaleWithCurrentScale();
+    // Reposition to new screen center (absolute coordinates)
+    const centerX = app.screen.width / 2;
+    const centerY = app.screen.height / 2;
+    this.animatedSprite.position.set(centerX, centerY);
+
+    // Rescale for new viewport
+    this.scaleForScreen();
   }
 
   /**
