@@ -71,6 +71,20 @@ export class VFXManager {
         allReady: confettiSuccess && cashoutSuccess,
       };
 
+      if (status.allReady) {
+        console.log(
+          "[VFXManager] ✅ All VFX systems ready (confetti, cashout)",
+        );
+      } else {
+        console.warn(
+          "[VFXManager] ⚠️ Some VFX systems unavailable (missing assets):",
+          {
+            confetti: confettiSuccess ? "✅ Ready" : "❌ Not Ready",
+            cashout: cashoutSuccess ? "✅ Ready" : "❌ Not Ready",
+          },
+        );
+      }
+
       return status;
     } catch (error) {
       return {
@@ -110,6 +124,9 @@ export class VFXManager {
    */
   playCelebration() {
     if (!this.initialized) {
+      console.warn(
+        "[VFXManager] Cannot play: VFXManager not initialized. Call initialize() first.",
+      );
       return;
     }
 
@@ -127,6 +144,9 @@ export class VFXManager {
    */
   playCashoutAnimation(onComplete) {
     if (!this.initialized || !this.cashoutVFXManager) {
+      console.warn(
+        "[VFXManager] Cannot play cashout: VFXManager not initialized",
+      );
       // Immediately call completion if animation unavailable
       if (onComplete) onComplete();
       return;

@@ -57,6 +57,13 @@ export class CashoutVFXManager {
     const validation = validateCashoutAssets();
 
     if (!validation.isComplete) {
+      console.warn(
+        "[CashoutVFXManager] Asset validation failed. Missing:",
+        validation.missingFields,
+      );
+      console.warn(
+        "[CashoutVFXManager] Cashout VFX will be disabled until assets are provided.",
+      );
       return false;
     }
 
@@ -68,8 +75,10 @@ export class CashoutVFXManager {
       window.addEventListener("resize", this.boundResizeHandler);
       window.addEventListener("orientationchange", this.boundResizeHandler);
 
+
       return true;
-    } catch {
+    } catch (error) {
+
       return false;
     }
   }
@@ -84,15 +93,28 @@ export class CashoutVFXManager {
     const { imageBase64, frameWidth, frameHeight, frameCount } =
       CASHOUT_SPRITESHEET;
 
+
     const assetKey = "cashout_vfx_spritesheet";
     Assets.add({ alias: assetKey, src: imageBase64 });
     const mainTexture = await Assets.load(assetKey);
 
     // Get texture source dimensions
     const textureWidth = mainTexture.width;
+    const textureHeight = mainTexture.height;
 
     // Calculate spritesheet grid layout
     const columns = Math.floor(textureWidth / frameWidth);
+    const rows = Math.ceil(frameCount / columns);
+
+    console.log(
+      `[CashoutVFXManager] Spritesheet dimensions: ${textureWidth}x${textureHeight}`,
+    );
+    console.log(
+      `[CashoutVFXManager] Frame dimensions: ${frameWidth}x${frameHeight}`,
+    );
+    console.log(
+      `[CashoutVFXManager] Grid layout: ${columns} columns x ${rows} rows`,
+    );
 
     // Slice main texture into individual frame textures
     this.textures = [];
@@ -107,6 +129,10 @@ export class CashoutVFXManager {
       });
       this.textures.push(texture);
     }
+
+    console.log(
+      `[CashoutVFXManager] Loaded ${this.textures.length} frame textures`,
+    );
   }
 
   /**
@@ -118,11 +144,15 @@ export class CashoutVFXManager {
   play(onComplete) {
     // Guard: Prevent double-play
     if (this.isPlaying) {
+
       return;
     }
 
     // Guard: Check if textures loaded
     if (!this.textures || this.textures.length === 0) {
+      console.warn(
+        "[CashoutVFXManager] Cannot play: textures not loaded. Assets not provided.",
+      );
       // Immediately call completion callback if no animation available
       if (onComplete) onComplete();
       return;
@@ -130,9 +160,11 @@ export class CashoutVFXManager {
 
     // Guard: Check if PixiRenderer available
     if (!this.pixiRenderer || !this.pixiRenderer.app) {
+
       if (onComplete) onComplete();
       return;
     }
+
 
     this.isPlaying = true;
     this.onAnimationComplete = onComplete;
@@ -167,6 +199,8 @@ export class CashoutVFXManager {
 
     // Register completion handler (MASTER DIRECTIVE: Sequential hand-off to React)
     this.animatedSprite.onComplete = () => {
+
+
       // CRITICAL FIX: Store callback before destroy() nullifies it
       const callback = this.onAnimationComplete;
       this.destroy();
@@ -201,6 +235,10 @@ export class CashoutVFXManager {
       const baseScale = this.pixiRenderer.currentScale || 1;
       this.animatedSprite.scale.set(baseScale);
     }
+
+    console.log(
+      `[CashoutVFXManager] Applied scale: ${this.animatedSprite.scale.x.toFixed(3)}`,
+    );
   }
 
   /**
@@ -209,6 +247,8 @@ export class CashoutVFXManager {
    */
   onResize() {
     if (!this.isPlaying || !this.animatedSprite) return;
+
+
 
     const app = this.pixiRenderer.app;
 
@@ -268,5 +308,7 @@ export class CashoutVFXManager {
       });
       this.textures = null;
     }
+
+
   }
 }

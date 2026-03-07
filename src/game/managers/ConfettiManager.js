@@ -37,6 +37,13 @@ export class ConfettiManager {
     // Validate assets before attempting load
     const validation = validateConfettiAssets();
     if (!validation.isComplete) {
+      console.warn(
+        "[ConfettiManager] Asset validation failed. Missing:",
+        validation.missingFields,
+      );
+      console.warn(
+        "[ConfettiManager] Confetti VFX will be disabled until assets are provided.",
+      );
       return false;
     }
 
@@ -49,8 +56,10 @@ export class ConfettiManager {
       window.addEventListener("resize", this.boundResizeHandler);
       window.addEventListener("orientationchange", this.boundResizeHandler);
 
+
       return true;
-    } catch {
+    } catch (error) {
+
       return false;
     }
   }
@@ -74,9 +83,21 @@ export class ConfettiManager {
 
     // Get texture source dimensions
     const textureWidth = mainTexture.width;
+    const textureHeight = mainTexture.height;
 
     // Calculate spritesheet grid layout
     const columns = Math.floor(textureWidth / frameWidth);
+    const rows = Math.ceil(frameCount / columns);
+
+    console.log(
+      `[ConfettiManager] Spritesheet dimensions: ${textureWidth}x${textureHeight}`,
+    );
+    console.log(
+      `[ConfettiManager] Frame dimensions: ${frameWidth}x${frameHeight}`,
+    );
+    console.log(
+      `[ConfettiManager] Grid layout: ${columns} columns x ${rows} rows`,
+    );
 
     // Slice main texture into individual frame textures
     this.textures = [];
@@ -91,6 +112,10 @@ export class ConfettiManager {
       });
       this.textures.push(texture);
     }
+
+    console.log(
+      `[ConfettiManager] Loaded ${this.textures.length} frame textures`,
+    );
   }
 
   /**
@@ -100,19 +125,25 @@ export class ConfettiManager {
   play() {
     // Guard: Prevent double-play
     if (this.isPlaying) {
+
       return;
     }
 
     // Guard: Check if textures loaded
     if (!this.textures || this.textures.length === 0) {
+      console.warn(
+        "[ConfettiManager] Cannot play: textures not loaded. Did you provide Base64 data?",
+      );
       gameEvents.emit("confettiSkipped");
       return;
     }
 
     // Guard: Check if PixiRenderer available
     if (!this.pixiRenderer || !this.pixiRenderer.app) {
+
       return;
     }
+
 
     this.isPlaying = true;
 
@@ -149,6 +180,7 @@ export class ConfettiManager {
 
     // Register completion handler
     this.animatedSprite.onComplete = () => {
+
       this.destroy();
       gameEvents.emit("confettiComplete");
     };
@@ -167,8 +199,8 @@ export class ConfettiManager {
     try {
       // Play confetti burst sound immediately
       this.audioEngine.playSound?.("confetti");
-    } catch {
-      // Some
+    } catch (error) {
+
     }
   }
 
@@ -203,6 +235,8 @@ export class ConfettiManager {
    */
   onResize() {
     if (!this.isPlaying || !this.animatedSprite) return;
+
+
 
     const app = this.pixiRenderer.app;
 
@@ -262,6 +296,8 @@ export class ConfettiManager {
       });
       this.textures = null;
     }
+
+
   }
 
   /**

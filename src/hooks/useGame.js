@@ -128,7 +128,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
             { key: "car-yellow", url: carYellowImg },
             { key: "car-police", url: carPoliceImg },
           ]);
-        } catch {
+        } catch (error) {
+
           // Continue with partial loading - game will use placeholders
           textures = {};
         }
@@ -141,7 +142,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
           ]);
           poleTexture = poleResult.light || poleResult["light"];
         } catch {
-          // Some
+          console.error("Light pole texture not available (optional)");
         }
 
         // Load optional finish banner texture separately (decorative only)
@@ -153,7 +154,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
           finishBannerTexture =
             bannerResult["carpet"] || bannerResult["carpet"];
         } catch {
-          // Some
+          console.error("Finish banner texture not available (optional)");
         }
 
         // Load Spine animation for chicken using ESM imports
@@ -165,7 +166,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
             chickenAtlasText,
             chickenTexture,
           );
-        } catch {
+        } catch (error) {
+
           throw new Error("Critical asset loading failed");
         }
 
@@ -186,6 +188,16 @@ export function useGame(canvasRef, config, scrollContainerRef) {
         // This ensures the win-notification texture exists
         if (game.initializeWinDisplay) {
           game.initializeWinDisplay();
+        }
+
+        // Initialize VFX Manager (confetti + coin celebration)
+        // Uses Promise.all for synchronized asset loading
+        if (game.initializeVFXManager) {
+          const vfxStatus = await game.initializeVFXManager();
+          console.log(
+            "[useGame] VFX Manager initialization status:",
+            vfxStatus,
+          );
         }
 
         // Get loaded textures with fallbacks
@@ -341,6 +353,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
         const chickenSpine = game.renderer.createSpine(chickenKeys);
         if (chickenSpine) {
           chicken.setSpine(chickenSpine);
+        } else {
+
         }
 
         // Set tooltip texture
@@ -397,8 +411,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
               containerElement,
               game.gateManager, // Pass gate manager
             );
-          } catch {
-            //Some
+          } catch (error) {
+
           }
         }
 
@@ -449,6 +463,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
           setIsLoading(false);
         }, 300);
       } catch (error) {
+
         setLoadingError(error.message || "Failed to initialize game");
         isInitializedRef.current = false;
 
@@ -483,8 +498,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
       if (game) {
         try {
           game.destroy();
-        } catch {
-          // Some
+        } catch (e) {
+
         }
         game = null;
       }
@@ -780,8 +795,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
               // Try next animation
             }
           }
-        } catch {
-          // Some
+        } catch (e) {
+
         }
       }
     }
@@ -843,8 +858,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
           if (game.carSpawner) {
             try {
               game.carSpawner.reset();
-            } catch {
-              // Some
+            } catch (error) {
+
             }
           }
 
@@ -886,8 +901,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
                     // Try next animation
                   }
                 }
-              } catch {
-                // Some
+              } catch (e) {
+
               }
             }
 
@@ -911,8 +926,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
           if (game.coinManager) {
             try {
               game.coinManager.reset();
-            } catch {
-              // Some
+            } catch (error) {
+
             }
           }
 
@@ -920,8 +935,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
           if (game.gateManager) {
             try {
               game.gateManager.destroy();
-            } catch {
-              // Some
+            } catch (error) {
+
             }
           }
 

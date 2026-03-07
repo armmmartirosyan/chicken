@@ -315,12 +315,18 @@ export class Game {
    */
   initializeWinDisplay() {
     if (!this.renderer || !this.renderer.app || !this.renderer.uiLayer) {
+      console.warn(
+        "⚠️ Win display init failed: renderer or uiLayer not available",
+      );
       return;
     }
 
     // Get win notification texture
     const notificationTexture = this.renderer.getTexture("win-notification");
     if (!notificationTexture) {
+      console.warn(
+        "⚠️ Win notification texture not found - cannot create notification",
+      );
       return;
     }
 
@@ -575,7 +581,22 @@ export class Game {
     }
 
     try {
-      return await this.vfxManager.initialize(this.containerElement);
+      const status = await this.vfxManager.initialize(this.containerElement);
+      if (status.bothReady) {
+        console.log(
+          "[Game] VFXManager initialized successfully (both systems ready)",
+        );
+      } else if (status.confetti || status.coins) {
+        console.warn(
+          "[Game] VFXManager partially initialized (some assets missing)",
+          status,
+        );
+      } else {
+        console.warn(
+          "[Game] VFXManager initialization failed - all VFX disabled",
+        );
+      }
+      return status;
     } catch (error) {
       return {
         confetti: false,
