@@ -152,15 +152,15 @@ export default function App() {
   }, []);
 
   // Handle win complete - restore game state after win animation
-  const handleWinComplete = useCallback(() => {
-    if (resetGameFn) {
-      resetGameFn();
-    }
+  // const handleWinComplete = useCallback(() => {
+  //   if (resetGameFn) {
+  //     resetGameFn();
+  //   }
 
-    setGameState("idle");
-    setCurrentWinValue(0);
-    winValueRef.current = 0;
-  }, [resetGameFn]);
+  //   setGameState("idle");
+  //   setCurrentWinValue(0);
+  //   winValueRef.current = 0;
+  // }, [resetGameFn]);
 
   // Register collision callback when game is ready
   useEffect(() => {
@@ -457,10 +457,10 @@ export default function App() {
       {/* Cashout Dialog - shown after cashout animation completes */}
       <CashoutDialog
         isOpen={showCashoutDialog}
-        onClose={() => {
-          setShowCashoutDialog(false);
-          handleWinComplete();
-        }}
+        // onClose={() => {
+        //   setShowCashoutDialog(false);
+        //   handleWinComplete();
+        // }}
       />
 
       {/* Hand indicator - context-aware positioning with smooth transitions */}

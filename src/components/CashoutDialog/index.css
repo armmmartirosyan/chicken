@@ -1,73 +1,135 @@
-/* Cashout Dialog Overlay - Full-screen semi-transparent background */
-.cashout-dialog-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  z-index: 10000;
-  pointer-events: auto;
-} /* Modal Container - Centers the dialog */
 .cashout-dialog-container {
-  position: fixed;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   inset: 0;
   z-index: 10001;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-
-/* Dialog Box - Centered container */
-.cashout-dialog-box {
-  pointer-events: auto;
-  width: 90%;
-  max-width: 500px;
-  min-height: 300px;
-  display: flex;
+  background-image: url(../../assets/cashout-bg.webp);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
   flex-direction: column;
+  padding: 40px 30px;
   align-items: center;
-  justify-content: center;
-  background-color: #34343490;
-  border: 2px solid white;
-  outline: 4px solid #0021fb;
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
-  border-radius: 15px;
-  padding: 30px;
-  position: relative;
+  justify-content: space-between;
 }
 
-/* Empty content div - ready for customization */
-.cashout-dialog-content {
+.cashout-dialog-logo {
+  width: 70%;
+}
+
+.cashout-dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cashout-dialog-btn {
+  width: 45%;
+}
+
+.cashout-dialog-btn-image {
   width: 100%;
+}
+
+.cashout-dialog-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cashout-dialog-box {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
+  background-color: #34343452;
+  border: 1px solid white;
+  outline: 4px solid #0021fb;
+  box-shadow: 0 0 20px white;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  padding: 0 50px;
+}
+
+/* Title */
+.cashout-dialog-title {
+  font-size: 75px;
+  color: #32a6f7;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+
+  font-family: "Bangers", system-ui;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.cashout-dialog-text {
+  font-size: 75px;
   color: white;
-  font-family: "Press Start 2P", monospace;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  font-family: "Bangers", system-ui;
+  font-weight: 400;
+  font-style: normal;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .cashout-dialog-box {
-    width: 95%;
-    max-width: none;
-    padding: 20px;
-    min-height: 250px;
+/* Lane Indicator */
+.cashout-dialog-lane {
+  font-size: 75px;
+  color: #32a6f7;
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9);
+  font-family: "Bangers", system-ui;
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Next Button */
+.cashout-dialog-button {
+  width: 230px;
+  height: 60px;
+  background: #56d8ff;
+  background: linear-gradient(
+    180deg,
+    rgba(86, 216, 255, 1) 0%,
+    rgba(9, 110, 235, 1) 100%
+  );
+  border: 2px solid black;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 40px;
+  color: #ffffff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  transition:
+    transform 0.1s ease,
+    filter 0.1s ease;
+  position: relative;
+  transform-origin: center;
+  animation: bounce 1.5s ease-in-out infinite;
+
+  font-family: "Bangers", system-ui;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.cashout-dialog-button:hover {
+  filter: brightness(1.1);
+}
+
+.cashout-dialog-button:active {
+  animation: none;
+  transform: scale(0.95);
+  filter: brightness(0.9);
+}
+
+/* Bounce animation for next button */
+@keyframes bounce {
+  0%,
+  100% {
+    transform: scale(1);
   }
-}
-
-@media (max-width: 480px) {
-  .cashout-dialog-box {
-    padding: 15px;
-    min-height: 200px;
-  }
-}
-
-/* Ensure dialog stays centered even on orientation change */
-@media (orientation: landscape) and (max-height: 500px) {
-  .cashout-dialog-box {
-    max-height: 90vh;
-    overflow-y: auto;
+  50% {
+    transform: scale(1.08);
   }
 }

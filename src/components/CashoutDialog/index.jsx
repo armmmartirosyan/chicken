@@ -1,4 +1,7 @@
 import "./index.css";
+import logo from "../../assets/cashout-logo.webp";
+import playMarket from "../../assets/play-market.webp";
+import appStore from "../../assets/app-store.webp";
 
 /**
  * CashoutDialog - Post-cashout celebration dialog
@@ -16,44 +19,43 @@ import "./index.css";
  * - Controlled via showCashoutDialog in parent (App.jsx)
  * - Shown after cashoutAnimation.onComplete callback triggers
  */
-const CashoutDialog = ({ isOpen, onClose }) => {
+const CashoutDialog = ({ isOpen }) => {
   if (!isOpen) return null;
 
   return (
-    <>
-      {/* Semi-transparent overlay - blocks all interaction */}
-      <div className="cashout-dialog-overlay" onClick={onClose} />
+    <div className="cashout-dialog-container">
+      <img
+        src={logo}
+        alt="Cashout Celebration"
+        className="cashout-dialog-logo"
+      />
 
-      {/* Modal container - centers dialog */}
-      <div className="cashout-dialog-container">
+      <div className="cashout-dialog-content">
         <div className="cashout-dialog-box">
-          {/* Empty content div per MASTER DIRECTIVE */}
-          {/* Ready for customization - add win amount display, buttons, etc. */}
-          <div className="cashout-dialog-content">
-            {/* Temporary test content - shows dialog is working */}
-            <div
-              style={{ color: "white", fontSize: "24px", marginBottom: "20px" }}
-            >
-              🎉 Cashout Successful! 🎉
-            </div>
-            <button
-              onClick={onClose}
-              style={{
-                padding: "10px 30px",
-                fontSize: "16px",
-                cursor: "pointer",
-                backgroundColor: "#4CAF50",
-                color: "white",
-                border: "none",
-                borderRadius: "5px",
-              }}
-            >
-              CLOSE
-            </button>
-          </div>
+          <h1 className="cashout-dialog-title">TAKE</h1>
+          <h1 className="cashout-dialog-text">1500 €</h1>
+          <div className="cashout-dialog-lane">250 FS</div>
         </div>
+        <button className="cashout-dialog-button">TAKE</button>
       </div>
-    </>
+
+      <div className="cashout-dialog-actions">
+        <a href="" target="blank" className="cashout-dialog-btn">
+          <img
+            src={appStore}
+            alt="App store"
+            className="cashout-dialog-btn-image"
+          />
+        </a>
+        <a href="" target="blank" className="cashout-dialog-btn">
+          <img
+            src={playMarket}
+            alt="Play market"
+            className="cashout-dialog-btn-image"
+          />
+        </a>
+      </div>
+    </div>
   );
 };
 
