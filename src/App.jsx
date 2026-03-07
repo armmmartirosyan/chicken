@@ -99,7 +99,6 @@ export default function App() {
         const currentLane = currentLaneRef.current;
         const isSafe = game.isNextLaneSafe(currentLane);
         if (!isSafe) {
-          console.log("[Safety-Lock] ⛔ Blocked: Car detected in next lane");
           return; // Silently block the jump
         }
       }
@@ -217,8 +216,8 @@ export default function App() {
     // This enables persistent modals for all future games
     try {
       sessionStorage.setItem("chicken_game_played", "true");
-    } catch (e) {
-      console.warn("Failed to set chicken_game_played:", e);
+    } catch {
+      // Ignore sessionStorage errors (e.g. in private mode)
     }
 
     // Fade out finger, then move to GO button

@@ -17,10 +17,10 @@ export function ProvablySettings({ ref }) {
         await navigator.clipboard.writeText(textToCopy);
       } else {
         // Fallback for older browsers (see Method 2)
-        console.error("Clipboard API not supported");
+
       }
     } catch (err) {
-      console.error("Failed to copy: ", err);
+
     }
   };
 

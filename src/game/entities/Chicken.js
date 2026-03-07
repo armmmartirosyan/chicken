@@ -53,7 +53,7 @@ export class Chicken extends BaseEntity {
   setSpine(spine) {
     // Guard against destroyed container
     if (!this.container) {
-      console.warn("Cannot set spine: container is null");
+
       return;
     }
 
@@ -64,7 +64,7 @@ export class Chicken extends BaseEntity {
     this.spine = spine;
 
     if (!this.spine) {
-      console.warn("Spine instance is null");
+
       return;
     }
 
@@ -142,7 +142,7 @@ export class Chicken extends BaseEntity {
    */
   setTooltipTexture(texture) {
     if (!this.container || !texture) {
-      console.warn("Cannot set tooltip: container or texture is null");
+
       return;
     }
 
@@ -271,7 +271,7 @@ export class Chicken extends BaseEntity {
         this.spine.state.setAnimation(0, animationName, loop);
         this.currentAnimation = animationName;
       } catch {
-        console.warn(`Animation ${animationName} not found`);
+
       }
     }
   }
@@ -333,7 +333,7 @@ export class Chicken extends BaseEntity {
             this.spine.state.timeScale = 1.6;
             this.currentAnimation = "jump";
           } catch {
-            console.warn("Jump animation not found, falling back to walk");
+
             const fallbackAnimations = ["walk", "idle_front", "idle"];
             for (const anim of fallbackAnimations) {
               try {
@@ -426,7 +426,7 @@ export class Chicken extends BaseEntity {
     this.hideTooltip();
 
     if (!this.spine || !this.spine.state) {
-      console.warn("Cannot play death animation: spine not initialized");
+
       if (onComplete) onComplete();
       return;
     }
@@ -447,7 +447,7 @@ export class Chicken extends BaseEntity {
         });
       }
     } catch (error) {
-      console.error("Failed to play death animation:", error);
+
       if (onComplete) onComplete();
     }
   }

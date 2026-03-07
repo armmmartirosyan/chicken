@@ -129,7 +129,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
             { key: "car-police", url: carPoliceImg },
           ]);
         } catch (error) {
-          console.error("Failed to load textures:", error);
+
           // Continue with partial loading - game will use placeholders
           textures = {};
         }
@@ -167,7 +167,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
             chickenTexture,
           );
         } catch (error) {
-          console.error("Failed to load chicken animation:", error);
+
           throw new Error("Critical asset loading failed");
         }
 
@@ -354,7 +354,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
         if (chickenSpine) {
           chicken.setSpine(chickenSpine);
         } else {
-          console.error("Failed to create chicken Spine animation");
+
         }
 
         // Set tooltip texture
@@ -412,7 +412,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
               game.gateManager, // Pass gate manager
             );
           } catch (error) {
-            console.error("CarSpawner initialization failed:", error);
+
           }
         }
 
@@ -463,7 +463,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
           setIsLoading(false);
         }, 300);
       } catch (error) {
-        console.error("Failed to initialize game:", error);
+
         setLoadingError(error.message || "Failed to initialize game");
         isInitializedRef.current = false;
 
@@ -499,7 +499,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
         try {
           game.destroy();
         } catch (e) {
-          console.warn("Error during cleanup:", e);
+
         }
         game = null;
       }
@@ -796,7 +796,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
             }
           }
         } catch (e) {
-          console.warn("Could not reset chicken animation:", e);
+
         }
       }
     }
@@ -859,7 +859,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
             try {
               game.carSpawner.reset();
             } catch (error) {
-              console.error("Error resetting car spawner:", error);
+
             }
           }
 
@@ -902,7 +902,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
                   }
                 }
               } catch (e) {
-                console.warn("Could not reset chicken animation:", e);
+
               }
             }
 
@@ -927,7 +927,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
             try {
               game.coinManager.reset();
             } catch (error) {
-              console.error("Error resetting coins:", error);
+
             }
           }
 
@@ -936,7 +936,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
             try {
               game.gateManager.destroy();
             } catch (error) {
-              console.error("Error resetting gates:", error);
+
             }
           }
 

@@ -88,7 +88,6 @@ export class Game {
    */
   start() {
     if (!this.initialized || !this.renderer.app) {
-      console.error("Game not initialized");
       return;
     }
 
@@ -259,7 +258,6 @@ export class Game {
       : null;
 
     if (!chicken) {
-      console.warn("Chicken entity not found for death animation");
       if (onComplete) onComplete();
       return;
     }
@@ -449,9 +447,8 @@ export class Game {
    * @param {number} amount - Win amount to display
    * @param {number} duration - Duration in milliseconds (3000 for auto-win, 2000 for cashout)
    */
-  showWinNotification(amount, duration = 1000) {
+  showWinNotification(amount, duration = 1500) {
     if (!this.winDisplay || !this.winAmountText) {
-      console.warn("⚠️ Win display not initialized - cannot show notification");
       return;
     }
 
@@ -512,7 +509,6 @@ export class Game {
    */
   resetGame() {
     if (!this.initialized) {
-      console.warn("Cannot reset game: game not initialized");
       return;
     }
 
@@ -527,8 +523,8 @@ export class Game {
     if (this.coinManager) {
       try {
         this.coinManager.reset();
-      } catch (error) {
-        console.error("Error resetting coins:", error);
+      } catch {
+        // Some
       }
     }
 
@@ -536,8 +532,8 @@ export class Game {
     if (this.gateManager) {
       try {
         this.gateManager.destroy();
-      } catch (error) {
-        console.error("Error resetting gates:", error);
+      } catch {
+        // Some
       }
     }
 
@@ -545,8 +541,8 @@ export class Game {
     if (this.carSpawner) {
       try {
         this.carSpawner.reset();
-      } catch (error) {
-        console.error("Error resetting car spawner:", error);
+      } catch {
+        // Some
       }
     }
   }
@@ -581,9 +577,6 @@ export class Game {
    */
   async initializeVFXManager() {
     if (!this.vfxManager || !this.renderer || !this.containerElement) {
-      console.log(this.vfxManager, this.renderer, this.containerElement);
-
-      console.warn("[Game] Cannot initialize VFXManager: missing dependencies");
       return { confetti: false, coins: false, bothReady: false };
     }
 
@@ -605,7 +598,6 @@ export class Game {
       }
       return status;
     } catch (error) {
-      console.error("[Game] VFXManager initialization error:", error);
       return {
         confetti: false,
         coins: false,

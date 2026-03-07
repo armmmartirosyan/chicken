@@ -75,10 +75,10 @@ export class CashoutVFXManager {
       window.addEventListener("resize", this.boundResizeHandler);
       window.addEventListener("orientationchange", this.boundResizeHandler);
 
-      console.log("[CashoutVFXManager] Initialized successfully");
+
       return true;
     } catch (error) {
-      console.error("[CashoutVFXManager] Initialization failed:", error);
+
       return false;
     }
   }
@@ -93,7 +93,7 @@ export class CashoutVFXManager {
     const { imageBase64, frameWidth, frameHeight, frameCount } =
       CASHOUT_SPRITESHEET;
 
-    console.log("[CashoutVFXManager] Loading spritesheet...");
+
     const assetKey = "cashout_vfx_spritesheet";
     Assets.add({ alias: assetKey, src: imageBase64 });
     const mainTexture = await Assets.load(assetKey);
@@ -144,7 +144,7 @@ export class CashoutVFXManager {
   play(onComplete) {
     // Guard: Prevent double-play
     if (this.isPlaying) {
-      console.warn("[CashoutVFXManager] Animation already playing");
+
       return;
     }
 
@@ -160,12 +160,12 @@ export class CashoutVFXManager {
 
     // Guard: Check if PixiRenderer available
     if (!this.pixiRenderer || !this.pixiRenderer.app) {
-      console.error("[CashoutVFXManager] PixiRenderer not available");
+
       if (onComplete) onComplete();
       return;
     }
 
-    console.log("[CashoutVFXManager] Playing cashout animation");
+
     this.isPlaying = true;
     this.onAnimationComplete = onComplete;
 
@@ -199,7 +199,7 @@ export class CashoutVFXManager {
 
     // Register completion handler (MASTER DIRECTIVE: Sequential hand-off to React)
     this.animatedSprite.onComplete = () => {
-      console.log("[CashoutVFXManager] Animation complete - triggering dialog");
+
 
       // CRITICAL FIX: Store callback before destroy() nullifies it
       const callback = this.onAnimationComplete;
@@ -248,7 +248,7 @@ export class CashoutVFXManager {
   onResize() {
     if (!this.isPlaying || !this.animatedSprite) return;
 
-    console.log("[CashoutVFXManager] Resizing to new viewport dimensions");
+
 
     const app = this.pixiRenderer.app;
 
@@ -309,6 +309,6 @@ export class CashoutVFXManager {
       this.textures = null;
     }
 
-    console.log("[CashoutVFXManager] Disposed");
+
   }
 }

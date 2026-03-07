@@ -33,7 +33,7 @@ export class Coin extends BaseEntity {
    */
   setTextures(silverTexture, goldTexture) {
     if (!this.container) {
-      console.warn("Cannot set textures: container is null");
+
       return;
     }
 

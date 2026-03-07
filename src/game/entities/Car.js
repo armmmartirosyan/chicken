@@ -38,7 +38,7 @@ export class Car extends BaseEntity {
   setTexture(texture) {
     // Guard against destroyed container
     if (!this.container) {
-      console.warn("Cannot set texture: container is null");
+
       return;
     }
 

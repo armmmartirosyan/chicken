@@ -155,7 +155,7 @@ export class PixiRenderer {
       const texture = await Assets.load(key);
       return texture;
     } catch (error) {
-      console.error(`Failed to load texture ${key}:`, error);
+
       return null;
     }
   }
@@ -182,7 +182,7 @@ export class PixiRenderer {
       const textures = await Assets.load(allKeys);
       return textures;
     } catch (error) {
-      console.error("Failed to load textures:", error);
+
       return {};
     }
   }
@@ -243,7 +243,7 @@ export class PixiRenderer {
 
       return { key };
     } catch (error) {
-      console.error(`Failed to load Spine animation ${key}:`, error);
+
       throw error;
     }
   }
@@ -263,7 +263,7 @@ export class PixiRenderer {
 
       return { skeleton: `${key}_skeleton`, atlas: `${key}_atlas` };
     } catch (error) {
-      console.error(`Failed to load Spine animation ${key}:`, error);
+
       throw error;
     }
   }
@@ -293,8 +293,8 @@ export class PixiRenderer {
 
       return spine;
     } catch (error) {
-      console.error(`Failed to create Spine instance:`, error);
-      console.error("Error:", error);
+
+
       return null;
     }
   }

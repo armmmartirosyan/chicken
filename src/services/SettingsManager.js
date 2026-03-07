@@ -32,7 +32,7 @@ class SettingsManager {
         return { ...SettingsManager.DEFAULTS, ...JSON.parse(stored) };
       }
     } catch (error) {
-      console.warn("Failed to load settings from localStorage:", error);
+
     }
     return { ...SettingsManager.DEFAULTS };
   }
@@ -47,7 +47,7 @@ class SettingsManager {
         JSON.stringify(this.settings),
       );
     } catch (error) {
-      console.error("Failed to save settings to localStorage:", error);
+
     }
   }
 
@@ -105,7 +105,7 @@ class SettingsManager {
         try {
           callback(newValue, oldValue);
         } catch (error) {
-          console.error(`Error in settings listener for ${key}:`, error);
+
         }
       });
     }

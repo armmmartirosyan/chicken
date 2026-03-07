@@ -45,7 +45,7 @@ export class CoinManager {
     this.goldTexture = this.pixiRenderer.getTexture("coin-gold");
 
     if (!this.silverTexture || !this.goldTexture) {
-      console.error("Coin textures not found");
+
       return;
     }
 

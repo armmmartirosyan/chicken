@@ -34,7 +34,7 @@ export class Gate extends BaseEntity {
    */
   setTexture(texture) {
     if (!this.container) {
-      console.warn("Cannot set texture: container is null");
+
       return;
     }
 

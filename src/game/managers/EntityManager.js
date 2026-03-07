@@ -96,7 +96,7 @@ export class EntityManager {
         try {
           entity.update(deltaTime);
         } catch (e) {
-          console.warn("Error updating entity:", e);
+
         }
       }
     }

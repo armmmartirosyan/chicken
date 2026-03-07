@@ -28,7 +28,7 @@ class BetHistoryManager {
         return JSON.parse(stored);
       }
     } catch (error) {
-      console.warn("Failed to load bet history from localStorage:", error);
+
     }
     return [];
   }
@@ -49,7 +49,7 @@ class BetHistoryManager {
       );
       this.notifyListeners();
     } catch (error) {
-      console.error("Failed to save bet history to localStorage:", error);
+
     }
   }
 

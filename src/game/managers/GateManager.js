@@ -30,7 +30,7 @@ export class GateManager {
     this.gateTexture = this.pixiRenderer.getTexture("gate");
 
     if (!this.gateTexture) {
-      console.error("Gate texture not found");
+
       return;
     }
   }

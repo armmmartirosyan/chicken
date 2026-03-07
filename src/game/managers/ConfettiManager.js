@@ -56,10 +56,10 @@ export class ConfettiManager {
       window.addEventListener("resize", this.boundResizeHandler);
       window.addEventListener("orientationchange", this.boundResizeHandler);
 
-      console.log("[ConfettiManager] Initialized successfully");
+
       return true;
     } catch (error) {
-      console.error("[ConfettiManager] Initialization failed:", error);
+
       return false;
     }
   }
@@ -76,7 +76,7 @@ export class ConfettiManager {
 
     // imageBase64 already contains the full data URI (data:image/webp;base64,...)
     // No need to add another prefix
-    console.log("[ConfettiManager] Loading spritesheet...");
+
     const assetKey = "confetti_spritesheet";
     Assets.add({ alias: assetKey, src: imageBase64 });
     const mainTexture = await Assets.load(assetKey);
@@ -125,7 +125,7 @@ export class ConfettiManager {
   play() {
     // Guard: Prevent double-play
     if (this.isPlaying) {
-      console.warn("[ConfettiManager] Animation already playing");
+
       return;
     }
 
@@ -140,11 +140,11 @@ export class ConfettiManager {
 
     // Guard: Check if PixiRenderer available
     if (!this.pixiRenderer || !this.pixiRenderer.app) {
-      console.error("[ConfettiManager] PixiRenderer not available");
+
       return;
     }
 
-    console.log("[ConfettiManager] Playing confetti animation");
+
     this.isPlaying = true;
 
     // Create AnimatedSprite from texture array
@@ -180,7 +180,7 @@ export class ConfettiManager {
 
     // Register completion handler
     this.animatedSprite.onComplete = () => {
-      console.log("[ConfettiManager] Animation complete - cleaning up");
+
       this.destroy();
       gameEvents.emit("confettiComplete");
     };
@@ -200,7 +200,7 @@ export class ConfettiManager {
       // Play confetti burst sound immediately
       this.audioEngine.playSound?.("confetti");
     } catch (error) {
-      console.warn("[ConfettiManager] Audio playback failed:", error);
+
     }
   }
 
@@ -236,7 +236,7 @@ export class ConfettiManager {
   onResize() {
     if (!this.isPlaying || !this.animatedSprite) return;
 
-    console.log("[ConfettiManager] Resizing to new viewport dimensions");
+
 
     const app = this.pixiRenderer.app;
 
@@ -297,7 +297,7 @@ export class ConfettiManager {
       this.textures = null;
     }
 
-    console.log("[ConfettiManager] Disposed completely");
+
   }
 
   /**
