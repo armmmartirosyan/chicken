@@ -193,7 +193,6 @@ export class CarSpawner {
 
       // Verify the car was created with a valid container
       if (!car.container) {
-        console.error("Car created with null container - pool corrupted");
         return null;
       }
 
@@ -224,8 +223,8 @@ export class CarSpawner {
         if (car.container.parent === stage) {
           stage.removeChild(car.container);
         }
-      } catch (e) {
-        console.warn("Error removing car from stage:", e);
+      } catch {
+        // Some
       }
     }
   }
@@ -259,7 +258,6 @@ export class CarSpawner {
     // Get lane info
     const lane = this.lanes[targetLane];
     if (!lane) {
-      console.warn(`Lane ${targetLane} not found for forced spawn`);
       return;
     }
 
@@ -287,7 +285,6 @@ export class CarSpawner {
     // Get car from pool
     const car = this.acquireCar();
     if (!car || !car.container) {
-      console.warn("Failed to acquire car for forced spawn");
       return;
     }
 
@@ -295,7 +292,6 @@ export class CarSpawner {
     const carType = this.getRandomCarType();
     const texture = this.pixiRenderer.getTexture(carType.imageKey);
     if (!texture) {
-      console.warn(`Car texture not found: ${carType.imageKey}`);
       return;
     }
 
@@ -324,8 +320,8 @@ export class CarSpawner {
         // Set car z-index higher than coins (coins are at 100)
         car.container.zIndex = 150;
         this.entityManager.stage.addChild(car.container);
-      } catch (e) {
-        console.warn("Failed to add forced car to stage:", e);
+      } catch {
+        // Some
       }
     }
 
@@ -509,7 +505,6 @@ export class CarSpawner {
 
     // Validate car from pool
     if (!car || !car.container) {
-      console.warn("Failed to acquire valid car from pool");
       return;
     }
 
@@ -519,7 +514,6 @@ export class CarSpawner {
     // Get car texture from Pixi renderer
     const texture = this.pixiRenderer.getTexture(carType.imageKey);
     if (!texture) {
-      console.warn(`Car texture not found: ${carType.imageKey}`);
       return;
     }
 
@@ -563,8 +557,8 @@ export class CarSpawner {
         // Set car z-index higher than coins (coins are at 100)
         car.container.zIndex = 150;
         this.entityManager.stage.addChild(car.container);
-      } catch (e) {
-        console.warn("Failed to add car to stage:", e);
+      } catch {
+        // Some
       }
     }
   }
@@ -811,9 +805,6 @@ export class CarSpawner {
       );
 
       if (currentOverlap) {
-        console.log(
-          `[Safety] 🚗 Current car at Y=${Math.round(carY)}, blocking jump`,
-        );
         return false; // Unsafe - car is currently in danger zone
       }
 
@@ -831,9 +822,6 @@ export class CarSpawner {
         );
 
         if (futureOverlap) {
-          console.log(
-            `[Safety] 🚗 Car will be at Y=${Math.round(predictedY)} (t=${Math.round(timeOffset * 1000)}ms), blocking jump`,
-          );
           return false; // Unsafe - car will pass through danger zone
         }
       }
@@ -846,9 +834,6 @@ export class CarSpawner {
 
       // Block if car will spawn during or shortly after jump
       if (timeUntilNextSpawn < effectiveJumpDuration + 0.5) {
-        console.log(
-          `[Safety] 🚗 Car spawning in ${Math.round(timeUntilNextSpawn * 1000)}ms, blocking jump`,
-        );
         return false; // Unsafe - car spawning too soon
       }
     }
@@ -889,8 +874,8 @@ export class CarSpawner {
         if (stage && car.container.parent === stage) {
           try {
             stage.removeChild(car.container);
-          } catch (e) {
-            console.warn("Failed to remove car from stage:", e);
+          } catch {
+            // Some
           }
         }
       }

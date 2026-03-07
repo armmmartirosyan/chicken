@@ -77,11 +77,8 @@ export class EntityManager {
           if (displayObject && !displayObject.destroyed) {
             try {
               this.worldContainer.addChild(displayObject);
-            } catch (e) {
-              console.error(
-                `Failed to add ${entity.constructor.name} to world:`,
-                e,
-              );
+            } catch {
+              // Some
             }
           }
         }
@@ -95,8 +92,8 @@ export class EntityManager {
       if (entity && entity.active) {
         try {
           entity.update(deltaTime);
-        } catch (e) {
-
+        } catch {
+          // Some
         }
       }
     }

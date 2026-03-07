@@ -53,7 +53,6 @@ export class Chicken extends BaseEntity {
   setSpine(spine) {
     // Guard against destroyed container
     if (!this.container) {
-
       return;
     }
 
@@ -64,7 +63,6 @@ export class Chicken extends BaseEntity {
     this.spine = spine;
 
     if (!this.spine) {
-
       return;
     }
 
@@ -107,9 +105,6 @@ export class Chicken extends BaseEntity {
       }
 
       if (!foundAnimation) {
-        console.warn(
-          "No idle animation found, trying first available animation",
-        );
         const animations = this.spine.spineData?.animations;
         if (animations && animations.length > 0) {
           this.spine.state.setAnimation(0, animations[0].name, true);
@@ -142,7 +137,6 @@ export class Chicken extends BaseEntity {
    */
   setTooltipTexture(texture) {
     if (!this.container || !texture) {
-
       return;
     }
 
@@ -271,7 +265,7 @@ export class Chicken extends BaseEntity {
         this.spine.state.setAnimation(0, animationName, loop);
         this.currentAnimation = animationName;
       } catch {
-
+        // Some
       }
     }
   }
@@ -333,7 +327,6 @@ export class Chicken extends BaseEntity {
             this.spine.state.timeScale = 1.6;
             this.currentAnimation = "jump";
           } catch {
-
             const fallbackAnimations = ["walk", "idle_front", "idle"];
             for (const anim of fallbackAnimations) {
               try {
@@ -426,7 +419,6 @@ export class Chicken extends BaseEntity {
     this.hideTooltip();
 
     if (!this.spine || !this.spine.state) {
-
       if (onComplete) onComplete();
       return;
     }
@@ -446,8 +438,7 @@ export class Chicken extends BaseEntity {
           },
         });
       }
-    } catch (error) {
-
+    } catch {
       if (onComplete) onComplete();
     }
   }

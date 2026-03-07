@@ -87,8 +87,8 @@ class AudioEngine {
           this.stopMusic();
         }
       });
-    } catch (error) {
-      console.error("Failed to initialize AudioEngine:", error);
+    } catch {
+      // Some
     }
   }
 
@@ -104,8 +104,8 @@ class AudioEngine {
           const audioBuffer =
             await this.audioContext.decodeAudioData(arrayBuffer);
           this.buffers.set(key, audioBuffer);
-        } catch (error) {
-          console.warn(`Failed to load audio: ${key}`, error);
+        } catch {
+          // Some
         }
       },
     );
@@ -123,7 +123,6 @@ class AudioEngine {
 
     const buffer = this.buffers.get(soundKey);
     if (!buffer) {
-      console.warn(`Sound not found: ${soundKey}`);
       return null;
     }
 
@@ -159,8 +158,7 @@ class AudioEngine {
       };
 
       return source;
-    } catch (error) {
-      console.error(`Failed to play sound: ${soundKey}`, error);
+    } catch {
       return null;
     }
   }
@@ -180,7 +178,6 @@ class AudioEngine {
 
     const buffer = this.buffers.get("music");
     if (!buffer) {
-      console.warn("Music buffer not loaded");
       return;
     }
 
@@ -212,8 +209,8 @@ class AudioEngine {
         this.musicSource = null;
         this.musicGainNode = null;
       };
-    } catch (error) {
-      console.error("Failed to play music:", error);
+    } catch {
+      // Some
     }
   }
 
@@ -233,8 +230,8 @@ class AudioEngine {
         this.musicSource.stop();
         this.musicSource = null;
         this.musicGainNode = null;
-      } catch (error) {
-        console.error("Failed to stop music:", error);
+      } catch {
+        // Some
       }
     }
   }
@@ -311,9 +308,6 @@ class AudioEngine {
    */
   async loadSound(soundKey, dataUri) {
     if (!this.initialized) {
-      console.warn(
-        `AudioEngine not initialized, cannot load sound: ${soundKey}`,
-      );
       return;
     }
 
@@ -322,9 +316,8 @@ class AudioEngine {
       const arrayBuffer = await response.arrayBuffer();
       const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
       this.buffers.set(soundKey, audioBuffer);
-      console.log(`[AudioEngine] Loaded sound: ${soundKey}`);
-    } catch (error) {
-      console.warn(`Failed to load sound: ${soundKey}`, error);
+    } catch {
+      // Some
     }
   }
 
