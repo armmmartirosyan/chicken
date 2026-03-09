@@ -75,10 +75,8 @@ export class CashoutVFXManager {
       window.addEventListener("resize", this.boundResizeHandler);
       window.addEventListener("orientationchange", this.boundResizeHandler);
 
-
       return true;
-    } catch (error) {
-
+    } catch {
       return false;
     }
   }
@@ -92,7 +90,6 @@ export class CashoutVFXManager {
   async loadCashoutTextures() {
     const { imageBase64, frameWidth, frameHeight, frameCount } =
       CASHOUT_SPRITESHEET;
-
 
     const assetKey = "cashout_vfx_spritesheet";
     Assets.add({ alias: assetKey, src: imageBase64 });
@@ -144,7 +141,6 @@ export class CashoutVFXManager {
   play(onComplete) {
     // Guard: Prevent double-play
     if (this.isPlaying) {
-
       return;
     }
 
@@ -160,11 +156,9 @@ export class CashoutVFXManager {
 
     // Guard: Check if PixiRenderer available
     if (!this.pixiRenderer || !this.pixiRenderer.app) {
-
       if (onComplete) onComplete();
       return;
     }
-
 
     this.isPlaying = true;
     this.onAnimationComplete = onComplete;
@@ -199,16 +193,16 @@ export class CashoutVFXManager {
 
     // Register completion handler (MASTER DIRECTIVE: Sequential hand-off to React)
     this.animatedSprite.onComplete = () => {
-
-
       // CRITICAL FIX: Store callback before destroy() nullifies it
-      const callback = this.onAnimationComplete;
-      this.destroy();
+      setTimeout(() => {
+        const callback = this.onAnimationComplete;
+        this.destroy();
 
-      // Execute completion callback (shows React dialog)
-      if (callback) {
-        callback();
-      }
+        // Execute completion callback (shows React dialog)
+        if (callback) {
+          callback();
+        }
+      }, 400);
     };
   }
 
@@ -247,8 +241,6 @@ export class CashoutVFXManager {
    */
   onResize() {
     if (!this.isPlaying || !this.animatedSprite) return;
-
-
 
     const app = this.pixiRenderer.app;
 
@@ -308,7 +300,5 @@ export class CashoutVFXManager {
       });
       this.textures = null;
     }
-
-
   }
 }

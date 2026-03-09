@@ -447,7 +447,7 @@ export class Game {
    * @param {number} amount - Win amount to display
    * @param {number} duration - Duration in milliseconds (3000 for auto-win, 2000 for cashout)
    */
-  showWinNotification(amount, duration = 1500) {
+  showWinNotification(amount, duration = 2000) {
     if (!this.winDisplay || !this.winAmountText) {
       return;
     }
