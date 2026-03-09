@@ -107,19 +107,12 @@ class LiveWinService {
   }
 
   /**
-   * Get random interval between 2-5 seconds for organic feel
-   */
-  getRandomInterval() {
-    return 2000 + Math.random() * 3000; // 2000-5000ms
-  }
-
-  /**
    * Recursive generation with variable intervals
    */
   scheduleNextWin() {
     if (!this.isRunning) return;
 
-    const interval = this.getRandomInterval();
+    const interval = 4000;
 
     this.timeoutId = setTimeout(() => {
       // Generate and emit win event

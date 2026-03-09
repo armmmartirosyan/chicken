@@ -10,19 +10,13 @@
   }
 }
 
-@keyframes slideDown {
-  0% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
 .win-item-animate {
-  animation: slideDown 0.4s;
+  transform: translateY(0);
+  transition: all 0.2s ease-out;
+
+  @starting-style {
+    transform: translateY(-100%);
+  }
 }
 
 .live-wins-ticker {
@@ -92,7 +86,6 @@
 .UserLine {
   position: relative;
   display: flex;
-  flex: 1 1 0%;
   padding: 8px 12px;
   align-items: center;
   gap: 8px;
