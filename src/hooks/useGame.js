@@ -128,8 +128,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
             { key: "car-yellow", url: carYellowImg },
             { key: "car-police", url: carPoliceImg },
           ]);
-        } catch (error) {
-
+        } catch {
           // Continue with partial loading - game will use placeholders
           textures = {};
         }
@@ -166,8 +165,7 @@ export function useGame(canvasRef, config, scrollContainerRef) {
             chickenAtlasText,
             chickenTexture,
           );
-        } catch (error) {
-
+        } catch {
           throw new Error("Critical asset loading failed");
         }
 
@@ -353,8 +351,6 @@ export function useGame(canvasRef, config, scrollContainerRef) {
         const chickenSpine = game.renderer.createSpine(chickenKeys);
         if (chickenSpine) {
           chicken.setSpine(chickenSpine);
-        } else {
-
         }
 
         // Set tooltip texture
@@ -411,8 +407,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
               containerElement,
               game.gateManager, // Pass gate manager
             );
-          } catch (error) {
-
+          } catch {
+            //
           }
         }
 
@@ -463,7 +459,6 @@ export function useGame(canvasRef, config, scrollContainerRef) {
           setIsLoading(false);
         }, 300);
       } catch (error) {
-
         setLoadingError(error.message || "Failed to initialize game");
         isInitializedRef.current = false;
 
@@ -498,8 +493,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
       if (game) {
         try {
           game.destroy();
-        } catch (e) {
-
+        } catch {
+          //
         }
         game = null;
       }
@@ -795,8 +790,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
               // Try next animation
             }
           }
-        } catch (e) {
-
+        } catch {
+          //
         }
       }
     }
@@ -858,8 +853,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
           if (game.carSpawner) {
             try {
               game.carSpawner.reset();
-            } catch (error) {
-
+            } catch {
+              //
             }
           }
 
@@ -901,8 +896,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
                     // Try next animation
                   }
                 }
-              } catch (e) {
-
+              } catch {
+                //
               }
             }
 
@@ -926,8 +921,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
           if (game.coinManager) {
             try {
               game.coinManager.reset();
-            } catch (error) {
-
+            } catch {
+              //
             }
           }
 
@@ -935,8 +930,8 @@ export function useGame(canvasRef, config, scrollContainerRef) {
           if (game.gateManager) {
             try {
               game.gateManager.destroy();
-            } catch (error) {
-
+            } catch {
+              //
             }
           }
 

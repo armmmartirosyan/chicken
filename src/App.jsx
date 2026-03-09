@@ -285,6 +285,8 @@ export default function App() {
       if (laneIndex >= totalLanes) {
         // Play win sound when chicken reaches finish
         audioEngine.onWin();
+        // Play cashout sound
+        audioEngine.onCashout();
 
         // Show win notification animation
         const winnings = roundCurrency(winValueRef.current);
@@ -293,14 +295,15 @@ export default function App() {
           game.showWinNotification(winnings);
         }
 
-        // Play cashout sound
-        audioEngine.onCashout();
-
-        setGameState("atFinish");
         gameEvents.emit("game:finished", {
           laneIndex,
           winValue: winValueRef.current,
         });
+
+        setGameState("");
+        setTimeout(() => {
+          setGameState("atFinish");
+        }, 2000);
       }
     };
 
