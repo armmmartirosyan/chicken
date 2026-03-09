@@ -351,6 +351,8 @@ export default function App() {
   const handleCashout = useCallback(() => {
     if (gameState !== "atFinish") return;
 
+    setGameState("won"); // Transition to won state to block input and show win UI
+
     // Turn current lane's coin to gold
     if (finishCurrentLaneFn) {
       finishCurrentLaneFn();
@@ -366,9 +368,11 @@ export default function App() {
       game.vfxManager.playCashoutAnimation(() => {
         // Animation complete - update balance and show dialog
         setBalance((prev) => roundCurrency(prev + winnings));
-        setGameState("won");
-        setShowCashoutDialog(true);
-        setTutorialTarget("TAKE");
+
+        setTimeout(() => {
+          setShowCashoutDialog(true);
+          setTutorialTarget("TAKE");
+        }, 700);
       });
     } else {
       // Fallback if VFX manager unavailable
