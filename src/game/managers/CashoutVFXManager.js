@@ -1,4 +1,4 @@
-import { AnimatedSprite, Assets, Texture, Rectangle } from "pixi.js";
+import { AnimatedSprite, Texture, Rectangle } from "pixi.js";
 import {
   CASHOUT_SPRITESHEET,
   validateCashoutAssets,
@@ -33,6 +33,13 @@ export class CashoutVFXManager {
     this.animatedSprite = null; // PIXI.AnimatedSprite instance
     this.isPlaying = false; // Prevents double-play
     this.textures = null; // Array of PIXI.Texture (frames)
+    this.loadFailed = false; // Tracks if external asset failed to load
+
+    // POT (Power-of-Two) Hardware Abstraction
+    this.POT_FRAME_WIDTH = 512; // POT-compliant width
+    this.POT_FRAME_HEIGHT = 1024; // POT-compliant height
+    this.MAX_ATLAS_SIZE = 2048; // Android GPU texture size limit
+    this.potAtlases = []; // Multiple atlas textures for fragmentation
 
     // Viewport tracking for responsive scaling
     this.containerElement = null;
@@ -64,42 +71,73 @@ export class CashoutVFXManager {
       console.warn(
         "[CashoutVFXManager] Cashout VFX will be disabled until assets are provided.",
       );
+      this.loadFailed = true;
       return false;
     }
 
     try {
-      // Load cashout spritesheet frames
+      // Load cashout spritesheet frames using Canvas-Proxy pattern
       await this.loadCashoutTextures();
 
       // Register resize listeners (no event bus listener - called manually)
       window.addEventListener("resize", this.boundResizeHandler);
       window.addEventListener("orientationchange", this.boundResizeHandler);
 
+      this.loadFailed = false;
       return true;
-    } catch {
+    } catch (error) {
+      console.error(
+        "[CashoutVFXManager] Failed to load external spritesheet:",
+        error.message,
+      );
+      console.warn(
+        "[CashoutVFXManager] Fallback mode activated - animation will be skipped",
+      );
+      this.loadFailed = true;
       return false;
     }
   }
 
   /**
-   * Load cashout spritesheet and create texture array
-   * Slices Base64 spritesheet into individual frame textures
+   * Load cashout spritesheet using Canvas-Proxy pattern
+   *
+   * VITE BUNDLED MODEL:
+   * 1. Uses Vite-imported asset (bundled into HTML build)
+   * 2. Canvas-Proxy forces 2D decode before WebGL bind
+   * 3. Solves Android Native Browser "black rectangle" bug
+   * 4. Mathematically parses frames (no JSON atlas needed)
    *
    * @returns {Promise<void>}
+   * @throws {Error} If image fails to load or is invalid
    */
   async loadCashoutTextures() {
-    const { imageBase64, frameWidth, frameHeight, frameCount } =
+    const { imageUrl, frameWidth, frameHeight, frameCount } =
       CASHOUT_SPRITESHEET;
 
-    const assetKey = "cashout_vfx_spritesheet";
-    Assets.add({ alias: assetKey, src: imageBase64 });
-    const mainTexture = await Assets.load(assetKey);
+    console.log(
+      `[CashoutVFXManager] Loading Vite-bundled spritesheet: ${imageUrl}`,
+    );
 
-    // Get texture source dimensions
-    const textureWidth = mainTexture.width;
-    const textureHeight = mainTexture.height;
+    // STEP 1: Load Vite-bundled image using HTML Image object
+    const image = await this.loadExternalImage(imageUrl);
 
-    // Calculate spritesheet grid layout
+    console.log(
+      `[CashoutVFXManager] Image loaded: ${image.width}x${image.height}`,
+    );
+
+    // STEP 2: Canvas-Proxy decode (forces 2D buffer decode before WebGL)
+    const canvasSource = this.createCanvasProxy(image);
+
+    // STEP 3: Create PixiJS Texture from canvas (PixiJS v8 API)
+    const baseTexture = Texture.from(canvasSource, {
+      scaleMode: "linear", // Smooth scaling on mobile
+    });
+
+    // Get texture dimensions
+    const textureWidth = image.width;
+    const textureHeight = image.height;
+
+    // STEP 4: Calculate spritesheet grid layout (SENIOR ARCHITECT MATH)
     const columns = Math.floor(textureWidth / frameWidth);
     const rows = Math.ceil(frameCount / columns);
 
@@ -113,23 +151,86 @@ export class CashoutVFXManager {
       `[CashoutVFXManager] Grid layout: ${columns} columns x ${rows} rows`,
     );
 
-    // Slice main texture into individual frame textures
+    // STEP 5: Dynamically slice frames from baseTexture
     this.textures = [];
     for (let i = 0; i < frameCount; i++) {
       const x = (i % columns) * frameWidth;
       const y = Math.floor(i / columns) * frameHeight;
       const rect = new Rectangle(x, y, frameWidth, frameHeight);
-      // PixiJS v8: Share the same texture source with different frames
+
+      // Create texture from baseTexture with frame rectangle
       const texture = new Texture({
-        source: mainTexture.source,
+        source: baseTexture.source,
         frame: rect,
       });
+
       this.textures.push(texture);
     }
 
     console.log(
-      `[CashoutVFXManager] Loaded ${this.textures.length} frame textures`,
+      `[CashoutVFXManager] ✓ Loaded ${this.textures.length} frames via Canvas-Proxy`,
     );
+  }
+
+  /**
+   * Load external image using Promise-based HTML Image
+   *
+   * @param {string} url - Image URL (relative or absolute)
+   * @returns {Promise<HTMLImageElement>} Loaded image
+   * @throws {Error} If image fails to load
+   */
+  loadExternalImage(url) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+
+      // CRITICAL: Set crossOrigin for CDN compatibility
+      img.crossOrigin = "anonymous";
+
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error(`Failed to load: ${url}`));
+
+      img.src = url;
+    });
+  }
+
+  /**
+   * Canvas-Proxy pattern: Draw image to canvas to force 2D decode
+   *
+   * ANDROID COMPATIBILITY FIX:
+   * - Android Native Browser has a bug where external images loaded directly
+   *   into WebGL textures can render as "black rectangles"
+   * - By drawing to a canvas first, we force the browser to decode the image
+   *   in its 2D rendering pipeline before WebGL attempts to bind it
+   * - This ensures the decoded pixel data is available to WebGL
+   *
+   * @param {HTMLImageElement} image - Loaded image
+   * @returns {HTMLCanvasElement|OffscreenCanvas} Canvas with decoded image
+   */
+  createCanvasProxy(image) {
+    // Try OffscreenCanvas for better performance (if supported)
+    let canvas;
+    if (typeof OffscreenCanvas !== "undefined") {
+      canvas = new OffscreenCanvas(image.width, image.height);
+      console.log(
+        "[CashoutVFXManager] Using OffscreenCanvas for hardware acceleration",
+      );
+    } else {
+      // Fallback to regular canvas
+      canvas = document.createElement("canvas");
+      canvas.width = image.width;
+      canvas.height = image.height;
+      console.log("[CashoutVFXManager] Using standard canvas (fallback)");
+    }
+
+    // Draw image to canvas (forces decode)
+    const ctx = canvas.getContext("2d", {
+      alpha: true,
+      desynchronized: true, // Hint for performance
+    });
+
+    ctx.drawImage(image, 0, 0);
+
+    return canvas;
   }
 
   /**
@@ -144,13 +245,21 @@ export class CashoutVFXManager {
       return;
     }
 
+    // Guard: Check if external asset failed to load - use fallback
+    if (this.loadFailed) {
+      console.warn(
+        "[CashoutVFXManager] External asset unavailable, using fallback",
+      );
+      this.playFallback(onComplete);
+      return;
+    }
+
     // Guard: Check if textures loaded
     if (!this.textures || this.textures.length === 0) {
       console.warn(
-        "[CashoutVFXManager] Cannot play: textures not loaded. Assets not provided.",
+        "[CashoutVFXManager] Cannot play: textures not loaded. Using fallback.",
       );
-      // Immediately call completion callback if no animation available
-      if (onComplete) onComplete();
+      this.playFallback(onComplete);
       return;
     }
 
@@ -204,6 +313,29 @@ export class CashoutVFXManager {
         }
       }, 400);
     };
+  }
+
+  /**
+   * Fallback mode: Skip animation and immediately trigger dialog
+   *
+   * SAFETY NET:
+   * - Used when external spritesheet fails to load (404, network timeout, etc.)
+   * - Ensures game flow continues even without VFX
+   * - Maintains clean handoff to React CashoutDialog
+   *
+   * @param {Function} onComplete - Callback to trigger dialog
+   */
+  playFallback(onComplete) {
+    console.log(
+      "[CashoutVFXManager] Fallback: Skipping animation, triggering dialog immediately",
+    );
+
+    // Brief delay to prevent jarring instant transition
+    setTimeout(() => {
+      if (onComplete) {
+        onComplete();
+      }
+    }, 100);
   }
 
   /**
