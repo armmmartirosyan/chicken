@@ -64,13 +64,6 @@ export class CashoutVFXManager {
     const validation = validateCashoutAssets();
 
     if (!validation.isComplete) {
-      console.warn(
-        "[CashoutVFXManager] Asset validation failed. Missing:",
-        validation.missingFields,
-      );
-      console.warn(
-        "[CashoutVFXManager] Cashout VFX will be disabled until assets are provided.",
-      );
       this.loadFailed = true;
       return false;
     }
@@ -85,14 +78,7 @@ export class CashoutVFXManager {
 
       this.loadFailed = false;
       return true;
-    } catch (error) {
-      console.error(
-        "[CashoutVFXManager] Failed to load external spritesheet:",
-        error.message,
-      );
-      console.warn(
-        "[CashoutVFXManager] Fallback mode activated - animation will be skipped",
-      );
+    } catch {
       this.loadFailed = true;
       return false;
     }
@@ -114,16 +100,8 @@ export class CashoutVFXManager {
     const { imageUrl, frameWidth, frameHeight, frameCount } =
       CASHOUT_SPRITESHEET;
 
-    console.log(
-      `[CashoutVFXManager] Loading Vite-bundled spritesheet: ${imageUrl}`,
-    );
-
     // STEP 1: Load Vite-bundled image using HTML Image object
     const image = await this.loadExternalImage(imageUrl);
-
-    console.log(
-      `[CashoutVFXManager] Image loaded: ${image.width}x${image.height}`,
-    );
 
     // STEP 2: Canvas-Proxy decode (forces 2D buffer decode before WebGL)
     const canvasSource = this.createCanvasProxy(image);
@@ -135,21 +113,9 @@ export class CashoutVFXManager {
 
     // Get texture dimensions
     const textureWidth = image.width;
-    const textureHeight = image.height;
 
     // STEP 4: Calculate spritesheet grid layout (SENIOR ARCHITECT MATH)
     const columns = Math.floor(textureWidth / frameWidth);
-    const rows = Math.ceil(frameCount / columns);
-
-    console.log(
-      `[CashoutVFXManager] Spritesheet dimensions: ${textureWidth}x${textureHeight}`,
-    );
-    console.log(
-      `[CashoutVFXManager] Frame dimensions: ${frameWidth}x${frameHeight}`,
-    );
-    console.log(
-      `[CashoutVFXManager] Grid layout: ${columns} columns x ${rows} rows`,
-    );
 
     // STEP 5: Dynamically slice frames from baseTexture
     this.textures = [];
@@ -166,10 +132,6 @@ export class CashoutVFXManager {
 
       this.textures.push(texture);
     }
-
-    console.log(
-      `[CashoutVFXManager] ✓ Loaded ${this.textures.length} frames via Canvas-Proxy`,
-    );
   }
 
   /**
@@ -211,15 +173,11 @@ export class CashoutVFXManager {
     let canvas;
     if (typeof OffscreenCanvas !== "undefined") {
       canvas = new OffscreenCanvas(image.width, image.height);
-      console.log(
-        "[CashoutVFXManager] Using OffscreenCanvas for hardware acceleration",
-      );
     } else {
       // Fallback to regular canvas
       canvas = document.createElement("canvas");
       canvas.width = image.width;
       canvas.height = image.height;
-      console.log("[CashoutVFXManager] Using standard canvas (fallback)");
     }
 
     // Draw image to canvas (forces decode)
@@ -247,18 +205,12 @@ export class CashoutVFXManager {
 
     // Guard: Check if external asset failed to load - use fallback
     if (this.loadFailed) {
-      console.warn(
-        "[CashoutVFXManager] External asset unavailable, using fallback",
-      );
       this.playFallback(onComplete);
       return;
     }
 
     // Guard: Check if textures loaded
     if (!this.textures || this.textures.length === 0) {
-      console.warn(
-        "[CashoutVFXManager] Cannot play: textures not loaded. Using fallback.",
-      );
       this.playFallback(onComplete);
       return;
     }
@@ -297,39 +249,26 @@ export class CashoutVFXManager {
     uiLayer.addChild(this.animatedSprite);
     uiLayer.sortableChildren = true; // Enable z-index sorting
 
-    // Start animation
-    this.animatedSprite.gotoAndPlay(0);
+    // ANTI-FLICKER PROTOCOL: Explicit visibility management
+    // Ensure sprite is fully visible and ready to display
+    this.animatedSprite.visible = true;
+    this.animatedSprite.alpha = 1;
 
-    // Register completion handler (MASTER DIRECTIVE: 200ms Perceptual Buffer)
-    this.animatedSprite.onComplete = () => {
-      // Step 1: Animation has finished - sprite now frozen on final frame
-      console.log(
-        "[CashoutVFXManager] Animation finished. Holding final frame for 200ms perceptual buffer...",
-      );
+    // Start animation playback
+    this.animatedSprite.play();
+    this.animatedSprite.onFrameChange = (currentFrame) => {
+      if (currentFrame === this.textures.length - 5) {
+        this.animatedSprite.stop();
 
-      // Step 2: 200ms delay - let player absorb the final payout amount
-      // During this time:
-      // - Sprite remains visible at screen center
-      // - Final frame (e.g., "10,278€") is frozen on screen
-      // - Game inputs remain locked (handled by parent component)
-      console.log(
-        "[CashoutVFXManager] Perceptual buffer complete. Triggering React dialog transition...",
-      );
+        setTimeout(() => {
+          const callback = this.onAnimationComplete;
+          if (callback) {
+            callback();
+          }
 
-      // Step 5: Clean up VFX sprite after dialog is mounted
-      // Brief additional delay ensures dialog renders before cleanup
-      setTimeout(() => {
-        // Step 3: Store callback before cleanup
-        const callback = this.onAnimationComplete;
-
-        // Step 4: Trigger React CashoutDialog (appears over animation)
-        if (callback) {
-          callback();
-        }
-
-        this.destroy();
-        console.log("[CashoutVFXManager] VFX cleanup complete.");
-      }, 200);
+          this.destroy();
+        }, 300);
+      }
     };
   }
 
@@ -344,10 +283,6 @@ export class CashoutVFXManager {
    * @param {Function} onComplete - Callback to trigger dialog
    */
   playFallback(onComplete) {
-    console.log(
-      "[CashoutVFXManager] Fallback: Skipping animation, triggering dialog immediately",
-    );
-
     // Brief delay to prevent jarring instant transition
     setTimeout(() => {
       if (onComplete) {
@@ -379,10 +314,6 @@ export class CashoutVFXManager {
       const baseScale = this.pixiRenderer.currentScale || 1;
       this.animatedSprite.scale.set(baseScale);
     }
-
-    console.log(
-      `[CashoutVFXManager] Applied scale: ${this.animatedSprite.scale.x.toFixed(3)}`,
-    );
   }
 
   /**

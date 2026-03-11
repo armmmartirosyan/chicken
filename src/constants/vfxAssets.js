@@ -24,7 +24,7 @@ export const CASHOUT_SPRITESHEET = {
   frameWidth: 540,
   frameHeight: 960,
   frameCount: 28,
-  frameRate: 28,
+  frameRate: 22,
 };
 
 /**

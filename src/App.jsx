@@ -372,7 +372,7 @@ export default function App() {
         setTimeout(() => {
           setShowCashoutDialog(true);
           setTutorialTarget("TAKE");
-        }, 700);
+        }, 400);
       });
     } else {
       // Fallback if VFX manager unavailable
