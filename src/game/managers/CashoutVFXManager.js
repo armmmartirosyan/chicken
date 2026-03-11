@@ -300,18 +300,36 @@ export class CashoutVFXManager {
     // Start animation
     this.animatedSprite.gotoAndPlay(0);
 
-    // Register completion handler (MASTER DIRECTIVE: Sequential hand-off to React)
+    // Register completion handler (MASTER DIRECTIVE: 200ms Perceptual Buffer)
     this.animatedSprite.onComplete = () => {
-      // CRITICAL FIX: Store callback before destroy() nullifies it
-      setTimeout(() => {
-        const callback = this.onAnimationComplete;
-        this.destroy();
+      // Step 1: Animation has finished - sprite now frozen on final frame
+      console.log(
+        "[CashoutVFXManager] Animation finished. Holding final frame for 200ms perceptual buffer...",
+      );
 
-        // Execute completion callback (shows React dialog)
+      // Step 2: 200ms delay - let player absorb the final payout amount
+      // During this time:
+      // - Sprite remains visible at screen center
+      // - Final frame (e.g., "10,278€") is frozen on screen
+      // - Game inputs remain locked (handled by parent component)
+      console.log(
+        "[CashoutVFXManager] Perceptual buffer complete. Triggering React dialog transition...",
+      );
+
+      // Step 5: Clean up VFX sprite after dialog is mounted
+      // Brief additional delay ensures dialog renders before cleanup
+      setTimeout(() => {
+        // Step 3: Store callback before cleanup
+        const callback = this.onAnimationComplete;
+
+        // Step 4: Trigger React CashoutDialog (appears over animation)
         if (callback) {
           callback();
         }
-      }, 400);
+
+        this.destroy();
+        console.log("[CashoutVFXManager] VFX cleanup complete.");
+      }, 200);
     };
   }
 
